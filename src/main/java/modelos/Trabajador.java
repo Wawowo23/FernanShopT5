@@ -19,7 +19,7 @@ public class Trabajador {
         this.pass = pass;
         this.email = email;
         this.movil = movil;
-        pedidosAsignados = null;
+        pedidosAsignados = new ArrayList<>();
     }
 
     // Constructor copia
@@ -30,7 +30,7 @@ public class Trabajador {
         pass = trabajador.pass;
         email = trabajador.email;
         movil = trabajador.movil;
-        pedidosAsignados = trabajador.pedidosAsignados;
+        pedidosAsignados = new ArrayList<>(trabajador.pedidosAsignados);
     }
 
     // Getters y Setters

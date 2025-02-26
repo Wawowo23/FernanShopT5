@@ -24,7 +24,7 @@ public class Pedido {
         deliveryDate = null;
         estado = 0;
         comentario = "";
-        productos = null;
+        productos = new ArrayList<>();
     }
 
     // Constructor copia

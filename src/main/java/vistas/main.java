@@ -1,7 +1,10 @@
 package vistas;
 
 import controlador.Controlador;
+import modelos.Admin;
+import modelos.Cliente;
 import modelos.Producto;
+import modelos.Trabajador;
 import utils.Utils;
 
 import java.util.ArrayList;
@@ -14,8 +17,33 @@ public class main {
         do {
             mensajeInicio();
             Object user = menuInicio(controlador);
-
+            if (user != null) {
+                menuUsuario(controlador,user);
+            }
         } while (true);
+    }
+
+    private static void menuUsuario(Controlador controlador, Object user) {
+        if (user instanceof Cliente clienteTemp) {
+            menuCliente(controlador,clienteTemp);
+        }
+        if (user instanceof Trabajador trabajadorTemp) {
+            menuTrabajador(controlador,trabajadorTemp);
+        }
+        if (user instanceof Admin adminTemp) {
+            menuAdmin(controlador,adminTemp);
+        }
+    }
+
+    private static void menuAdmin(Controlador controlador, Admin adminTemp) {
+
+    }
+
+    private static void menuTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+    }
+
+    private static void menuCliente(Controlador controlador, Cliente clienteTemp) {
+
     }
 
     private static Object menuInicio(Controlador controlador) {
@@ -38,7 +66,7 @@ public class main {
                 pintaCatalogo(controlador);
                 break;
             case 2:
-                registroUsuario(controlador);
+                registroCliente(controlador);
                 break;
             case 3:
                 return inicioSesion(controlador);
@@ -47,7 +75,38 @@ public class main {
         return null;
     }
 
-    private static void registroUsuario(Controlador controlador) {
+    private static void registroCliente(Controlador controlador) {
+        int telefono = 0;
+        String email = "";
+        System.out.println("Bienvenido al menú de registro");
+        do {
+            System.out.print("Introduzca su email: ");
+            email = S.nextLine();
+            if (!email.contains("@")) System.out.println("El correo introducido no es válido");
+        } while (!email.contains("@"));
+        System.out.print("Introduzca su contraseña: ");
+        String clave = S.nextLine();
+        System.out.print("Introduzca su nombre: ");
+        String nombre = S.nextLine();
+        System.out.print("Introduzca su localidad: ");
+        String localidad = S.nextLine();
+        System.out.print("Introduzca su provincia: ");
+        String provincia = S.nextLine();
+        System.out.print("Introduzca su dirección: ");
+        String direccion = S.nextLine();
+        do {
+            System.out.print("Introduzca su número de teléfono: ");
+            try {
+                telefono = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. Formato erróneo.");
+            }
+        } while (telefono > 999999999 || telefono < 100000000);
+
+        if (controlador.registraCliente(email,clave,nombre,localidad,provincia,direccion,telefono))
+            System.out.println("Se ha registrado correctamente");
+        else System.out.println("Ha ocurrido un problema a la hora de registrarse");
+        Utils.limpiaPantalla();
     }
 
     private static Object inicioSesion(Controlador controlador) {
@@ -55,6 +114,7 @@ public class main {
         String email = S.nextLine();
         System.out.println("Introduzca su contraseña: ");
         String clave = S.nextLine();
+        Utils.limpiaPantalla();
         return controlador.login(email,clave);
     }
 
@@ -78,7 +138,7 @@ public class main {
             }
         }
         Utils.pulsaParaContinuar();
-        System.out.println();
+        Utils.limpiaPantalla();
     }
 
     private static void pintaProductoSinRegistro(Producto producto) {

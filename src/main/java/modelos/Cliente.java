@@ -29,8 +29,8 @@ public class Cliente {
         this.provincia = provincia;
         this.direccion = direccion;
         this.telefono = telefono;
-        pedidos = null;
-        carro = null;
+        pedidos = new ArrayList<>();
+        carro = new ArrayList<>();
     }
 
     // Constructor copia
@@ -44,8 +44,8 @@ public class Cliente {
         provincia = cliente.provincia;
         direccion = cliente.direccion;
         telefono = cliente.telefono;
-        pedidos = cliente.pedidos;
-        carro = cliente.carro;
+        pedidos = new ArrayList<>(cliente.pedidos);
+        carro = new ArrayList<>(cliente.carro);
     }
 
     // Getters y Setters
