@@ -102,7 +102,7 @@ public class Pedido {
 
     // Metodo que cambia el estado de un paquete
     public boolean cambiaEstado (int nuevoEstado) {
-        if (nuevoEstado < 0 || nuevoEstado > 6) return false;
+        if (nuevoEstado < 0 || nuevoEstado > 7) return false;
         setEstado(nuevoEstado);
         return true;
     }

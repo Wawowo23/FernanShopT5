@@ -120,7 +120,7 @@ public class Trabajador {
     public ArrayList<Pedido> getPedidosPendientes () {
         ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
         for (Pedido p : pedidosAsignados) {
-            if (p.getEstado() != 6) pedidosPendientes.add(p);
+            if (p.getEstado() != 7) pedidosPendientes.add(p);
         }
         return pedidosPendientes;
     }
@@ -129,7 +129,7 @@ public class Trabajador {
     public ArrayList<Pedido> getPedidosCompletos () {
         ArrayList<Pedido> pedidosCompletos = new ArrayList<>();
         for (Pedido p : pedidosAsignados) {
-            if (p.getEstado() == 6) pedidosCompletos.add(p);
+            if (p.getEstado() == 7) pedidosCompletos.add(p);
         }
         return pedidosCompletos;
     }
