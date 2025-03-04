@@ -111,9 +111,8 @@ public class Controlador {
         for (Trabajador t : trabajadores) {
             if (t.getPedidosPendientes().size() < numPedidosMenor) {
                 numPedidosMenor = t.getPedidosPendientes().size();
-                contadorTrabajadoresIguales = 1;
+                trabajadorElegido  = t;
             }
-            if (t.getPedidosPendientes().size() == numPedidosMenor) contadorTrabajadoresIguales++;
         }
         /*for (Trabajador t : trabajadores) {
             if (t.getPedidosPendientes().size() == numPedidosMenor) {
@@ -121,14 +120,113 @@ public class Controlador {
                 contadorTrabajadoresIguales++;
             }
         }*/
-        if (contadorTrabajadoresIguales != 1) return null;
+        if (hayEmpateTrabajadoresCandidatos(trabajadorElegido)) return null;
         return trabajadorElegido;
+    }
+
+    private boolean hayEmpateTrabajadoresCandidatos(Trabajador trabajadorElegido) {
+        for (Trabajador t : trabajadores) {
+            if (t.getPedidosPendientes().size() == trabajadorElegido.getPedidosPendientes().size()) return true;
+        }
+        return false;
+    }
+
+    public boolean registraCliente(String email, String clave, String nombre, String localidad, String provincia, String direccion, int telefono) {
+        int id;
+        do {
+            id = generaIdCliente();
+        } while (buscaClienteById(id) != null);
+        return clientes.add(new Cliente(id,email,clave,nombre,localidad,provincia,direccion,telefono));
+    }
+
+    private Cliente buscaClienteById(int id) {
+        for (Cliente c : clientes) {
+            if (c.getId() == id) return c;
+        }
+        return null;
+    }
+
+    public ArrayList<Producto> buscaProductosByMarca(String marca) {
+        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+        for (Producto p : catalogo)  {
+            if (p.getMarca().toLowerCase().contains(marca.toLowerCase()))
+                productosEncontrados.add(p);
+        }
+        return productosEncontrados;
+    }
+    public ArrayList<Producto> buscaProductosByModelo(String modelo) {
+        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+        for (Producto p : catalogo)  {
+            if (p.getModelo().toLowerCase().contains(modelo.toLowerCase()))
+                productosEncontrados.add(p);
+        }
+        return productosEncontrados;
+    }
+    public ArrayList<Producto> buscaProductosByDescripcion(String descripcion) {
+        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+        for (Producto p : catalogo)  {
+            if (p.getDescripcion().toLowerCase().contains(descripcion.toLowerCase()))
+                productosEncontrados.add(p);
+        }
+        return productosEncontrados;
+    }
+    public ArrayList<Producto> buscaProductosByTermino(String termino) {
+        ArrayList <Producto> resultadosMarca = buscaProductosByMarca(termino);
+        ArrayList <Producto> resultadosModelo = buscaProductosByModelo(termino);
+        ArrayList <Producto> resultadosDescripcion = buscaProductosByDescripcion(termino);
+        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+
+        for (Producto p : resultadosMarca) {
+            if (!existeProductoEnLista(productosEncontrados,p)) productosEncontrados.add(p);
+        }
+        for (Producto p : resultadosModelo) {
+            if (!existeProductoEnLista(productosEncontrados,p)) productosEncontrados.add(p);
+        }
+        for (Producto p : resultadosDescripcion) {
+            if (!existeProductoEnLista(productosEncontrados,p)) productosEncontrados.add(p);
+        }
+
+        return productosEncontrados;
+    }
+
+    public ArrayList<Producto> buscaProductoByPrecio(float precioMinimo, float precioMaximo) {
+        ArrayList<Producto> resultados = new ArrayList<>();
+        for (Producto p : catalogo) {
+            if (p.getPrecio() <= precioMaximo && p.getPrecio() >= precioMinimo) resultados.add(p);
+        }
+        return resultados;
+    }
+
+    public ArrayList<Pedido> getTodosPedidos() {
+        ArrayList<Pedido> todosPedidos = new ArrayList<>();
+        for (Cliente c : clientes) {
+            for (Pedido p : c.getPedidos()) {
+                if (!existePedidoEnLista(todosPedidos,p)) todosPedidos.add(p);
+            }
+        }
+        return todosPedidos;
+    }
+
+    private boolean existePedidoEnLista(ArrayList<Pedido> todosPedidos, Pedido p) {
+        for (Pedido pedido : todosPedidos) {
+            if (pedido.getId() == p.getId()) return true;
+        }
+        return false;
+    }
+
+    private boolean existeProductoEnLista(ArrayList<Producto> productosEncontrados, Producto p) {
+        for (Producto producto : productosEncontrados) {
+            if (p.getId() == producto.getId()) return true;
+        }
+        return false;
     }
 
     // Metodo que genera automáticamente el id de un cliente
     private int generaIdCliente () {
         return (int) (Math.random() * 1000000) + 2000000;
     }
+
+
 
     // Metodo que genera automáticamente el id de un trabajador
     private int generaIdTrabajador () {
@@ -147,18 +245,5 @@ public class Controlador {
     }
 
 
-    public boolean registraCliente(String email, String clave, String nombre, String localidad, String provincia, String direccion, int telefono) {
-        int id;
-        do {
-            id = generaIdCliente();
-        } while (buscaClienteById(id) != null);
-        return clientes.add(new Cliente(id,email,clave,nombre,localidad,provincia,direccion,telefono));
-    }
 
-    private Cliente buscaClienteById(int id) {
-        for (Cliente c : clientes) {
-            if (c.getId() == id) return c;
-        }
-        return null;
-    }
 }

@@ -8,9 +8,8 @@ public class Data {
             case 2 -> "Enviado";
             case 3 -> "Retrasado";
             case 4 -> "Cancelado";
-            case 5 -> "En reparto";
-            case 6 -> "Entregado";
-            case 7 -> "Completado";
+            case 5 -> "Entregado";
+
             default -> "-1";
         };
     }

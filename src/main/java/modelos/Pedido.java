@@ -5,7 +5,7 @@ import data.Data;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class Pedido {
+public class Pedido implements Comparable<Pedido>{
     // Atributos
     private int id;
     private LocalDate fechaPedido;
@@ -102,7 +102,7 @@ public class Pedido {
 
     // Metodo que cambia el estado de un paquete
     public boolean cambiaEstado (int nuevoEstado) {
-        if (nuevoEstado < 0 || nuevoEstado > 7) return false;
+        if (nuevoEstado < 0 || nuevoEstado > 5) return false;
         setEstado(nuevoEstado);
         return true;
     }
@@ -162,5 +162,10 @@ public class Pedido {
                 ", comentario='" + comentario + '\'' +
                 ", productos=" + productos +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Pedido pedido) {
+        return this.fechaPedido.compareTo(pedido.getFechaPedido());
     }
 }

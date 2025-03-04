@@ -211,4 +211,12 @@ public class Cliente {
                 ", carro=" + (carro.toString()) +
                 '}';
     }
+
+    public ArrayList<Pedido> getPedidosPendientes() {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : pedidos) {
+            if (p.getEstado() != 5 && p.getEstado() != 4) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
 }

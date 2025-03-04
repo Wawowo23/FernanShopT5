@@ -12,26 +12,27 @@ import java.util.Scanner;
 
 public class main {
     public static final Scanner S = new Scanner(System.in);
+
     public static void main(String[] args) {
         Controlador controlador = new Controlador();
         do {
             mensajeInicio();
             Object user = menuInicio(controlador);
             if (user != null) {
-                menuUsuario(controlador,user);
+                menuUsuario(controlador, user);
             }
         } while (true);
     }
 
     private static void menuUsuario(Controlador controlador, Object user) {
         if (user instanceof Cliente clienteTemp) {
-            menuCliente(controlador,clienteTemp);
+            menuCliente(controlador, clienteTemp);
         }
         if (user instanceof Trabajador trabajadorTemp) {
-            menuTrabajador(controlador,trabajadorTemp);
+            menuTrabajador(controlador, trabajadorTemp);
         }
         if (user instanceof Admin adminTemp) {
-            menuAdmin(controlador,adminTemp);
+            menuAdmin(controlador, adminTemp);
         }
     }
 
@@ -43,8 +44,144 @@ public class main {
     }
 
     private static void menuCliente(Controlador controlador, Cliente clienteTemp) {
-
+        int op = -1;
+        do {
+            System.out.printf("""
+                    Bienvenido a Fernanshop %s. Tienes %d %s
+                    ==========================================
+                    
+                    1.- Consultar el catálogo de productos
+                    2.- Realizar un pedido
+                    3.- Ver mis pedidos
+                    4.- Ver mis datos personales
+                    5.- Modificar mis datos personales
+                    6.- Salir
+                    
+                    Introduzca su opción:\s""",clienteTemp.getNombre(),clienteTemp.getPedidosPendientes().size(),
+                    ((clienteTemp.getPedidosPendientes().size() == 1) ? "pedido pendiente de entrega"
+                            :"pedidos pendientes de entrega"));
+            try {
+                op = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto");
+            }
+            Utils.limpiaPantalla();
+            switch (op) {
+                case 1: // Visionado de catálogo
+                    menuVisionadoCatalogo(controlador);
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    System.out.print("Hasta la próxima");
+                    Utils.cargando();
+                    break;
+                default:
+                    System.out.println("Opción introducida incorrecta");
+                    break;
+            }
+        } while (op != 6);
     }
+
+    private static void menuVisionadoCatalogo(Controlador controlador) {
+        int op = -1;
+        do {
+            System.out.print("""
+                    Menú de visionado de catálogo
+                    =============================
+                    
+                    1.- Ver todo el catálogo
+                    2.- Búsqueda por marca
+                    3.- Búsqueda por modelo
+                    4.- Búsqueda por descripción
+                    5.- Búsqueda por término
+                    6.- Búsqueda por precio
+                    7.- Salir
+                    
+                    Introduzca su manera deseada de ver el catálogo:\s""");
+            try {
+                op = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido no es válido");
+            }
+            Utils.limpiaPantalla();
+            switch (op) {
+                case 1: // Catálogo completo
+                    pintaCatalogo(controlador);
+                    break;
+                case 2: // Búsqueda por marca
+                    System.out.print("Introduzca la marca que está buscando: ");
+                    String marca = S.nextLine();
+                    ArrayList<Producto> resultados = controlador.buscaProductosByMarca(marca);
+                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                    else pintaProductos(resultados);
+                    Utils.pulsaParaContinuar();
+                    break;
+                case 3: // Búsqueda por modelo
+                    System.out.print("Introduzca el modelo que está buscando: ");
+                    String modelo = S.nextLine();
+                    resultados = controlador.buscaProductosByModelo(modelo);
+                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                    else pintaProductos(resultados);
+                    Utils.pulsaParaContinuar();
+                    break;
+                case 4: // Búsqueda por descripción
+                    System.out.print("Introduzca la descripción que está buscando: ");
+                    String descripcion = S.nextLine();
+                    resultados = controlador.buscaProductosByDescripcion(descripcion);
+                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                    else pintaProductos(resultados);
+                    Utils.pulsaParaContinuar();
+                    break;
+                case 5: // Búsqueda por término
+                    System.out.print("Introduzca el término que está buscando: ");
+                    String termino = S.nextLine();
+                    resultados = controlador.buscaProductosByTermino(termino);
+                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                    else pintaProductos(resultados);
+                    Utils.pulsaParaContinuar();
+                    break;
+                case 6: // Búsqueda por precio
+                    System.out.print("Introduzca el precio mínimo que está buscando: ");
+                    float precioMinimo = Float.parseFloat(S.nextLine());
+                    System.out.print("Introduzca el precio máximo que está buscando: ");
+                    float precioMaximo = Float.parseFloat(S.nextLine());
+                    resultados = controlador.buscaProductoByPrecio(precioMinimo,precioMaximo);
+                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                    else pintaProductos(resultados);
+                    Utils.pulsaParaContinuar();
+                    break;
+                case 7: // Salir
+                    break;
+                default:
+                    System.out.println("Opción introducida incorrecta");
+                    break;
+            }
+        } while (op != 7);
+    }
+
+    private static void pintaProductos(ArrayList<Producto> resultados) {
+        String op = "";
+        for (int i = 0; i < resultados.size(); i++) {
+            pintaProductoSinRegistro(resultados.get(i));
+            if ((i + 1) % 5 == 0) {
+                op = preguntaSiNo();
+                if (op.equalsIgnoreCase("N")) {
+                    System.out.println();
+                    System.out.print("Regresando");
+                    Utils.cargando();
+                    i = resultados.size();
+                }
+            }
+        }
+    }
+
 
     private static Object menuInicio(Controlador controlador) {
         int op = 0;
@@ -103,7 +240,7 @@ public class main {
             }
         } while (telefono > 999999999 || telefono < 100000000);
 
-        if (controlador.registraCliente(email,clave,nombre,localidad,provincia,direccion,telefono))
+        if (controlador.registraCliente(email, clave, nombre, localidad, provincia, direccion, telefono))
             System.out.println("Se ha registrado correctamente");
         else System.out.println("Ha ocurrido un problema a la hora de registrarse");
         Utils.limpiaPantalla();
@@ -112,10 +249,10 @@ public class main {
     private static Object inicioSesion(Controlador controlador) {
         System.out.print("Introduzca su email: ");
         String email = S.nextLine();
-        System.out.println("Introduzca su contraseña: ");
+        System.out.print("Introduzca su contraseña: ");
         String clave = S.nextLine();
         Utils.limpiaPantalla();
-        return controlador.login(email,clave);
+        return controlador.login(email, clave);
     }
 
     private static void pintaCatalogo(Controlador controlador) {
@@ -128,7 +265,7 @@ public class main {
             pintaProductoSinRegistro(temp);
             productosParaPintar.remove(temp);
 
-            if ((i+1) % 5 == 0) {
+            if ((i + 1) % 5 == 0) {
                 op = preguntaSiNo();
                 if (op.equalsIgnoreCase("N")) {
                     System.out.println("Volviendo al menú de inicio");
@@ -145,7 +282,7 @@ public class main {
 
         System.out.println("===================================");
         System.out.println("\t" + producto.getMarca() +
-                ((producto.getRelevancia() > 9) ? " ⭐":"") );
+                ((producto.getRelevancia() > 9) ? " ⭐" : ""));
         System.out.println("\t" + producto.getModelo());
         System.out.println("\t" + producto.getDescripcion());
         System.out.println("\t" + producto.getPrecio());
