@@ -5,6 +5,7 @@ import modelos.Admin;
 import modelos.Cliente;
 import modelos.Producto;
 import modelos.Trabajador;
+import utils.Menus;
 import utils.Utils;
 
 import java.util.ArrayList;
@@ -47,19 +48,19 @@ public class main {
         int op = -1;
         do {
             System.out.printf("""
-                    Bienvenido a Fernanshop %s. Tienes %d %s
-                    ==========================================
-                    
-                    1.- Consultar el catálogo de productos
-                    2.- Realizar un pedido
-                    3.- Ver mis pedidos
-                    4.- Ver mis datos personales
-                    5.- Modificar mis datos personales
-                    6.- Salir
-                    
-                    Introduzca su opción:\s""",clienteTemp.getNombre(),clienteTemp.getPedidosPendientes().size(),
+                            Bienvenido a Fernanshop %s. Tienes %d %s
+                            ==========================================
+                            
+                            1.- Consultar el catálogo de productos
+                            2.- Realizar un pedido
+                            3.- Ver mis pedidos
+                            4.- Ver mis datos personales
+                            5.- Modificar mis datos personales
+                            6.- Salir
+                            
+                            Introduzca su opción:\s""", clienteTemp.getNombre(), clienteTemp.getPedidosPendientes().size(),
                     ((clienteTemp.getPedidosPendientes().size() == 1) ? "pedido pendiente de entrega"
-                            :"pedidos pendientes de entrega"));
+                            : "pedidos pendientes de entrega"));
             try {
                 op = Integer.parseInt(S.nextLine());
             } catch (NumberFormatException e) {
@@ -70,7 +71,8 @@ public class main {
                 case 1: // Visionado de catálogo
                     menuVisionadoCatalogo(controlador);
                     break;
-                case 2:
+                case 2: // Realiza pedido
+                    subMenuPedidoCliente(controlador, clienteTemp);
                     break;
                 case 3:
                     break;
@@ -87,6 +89,129 @@ public class main {
                     break;
             }
         } while (op != 6);
+    }
+
+    private static void subMenuPedidoCliente(Controlador controlador, Cliente cliente) {
+        int op = -1;
+        do {
+            System.out.print("""
+                         Menú de Pedido
+                    ========================
+                    
+                    1.- Inserta un producto en el carro
+                    2.- Ver el carro
+                    3.- Eliminar un producto del carro
+                    4.- Confirmar el pedido
+                    5.- Cancelar el pedido
+                    6.- Salir
+                    
+                    Introduzca la opción deseada:\s""");
+            try {
+                op = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido no es correcto");
+            }
+            switch (op) {
+                case 1: // Inserta un producto en el carrito
+                    insertaProductoEnCarrito(controlador, cliente);
+                    break;
+                case 2: // Mostramos los productos del carrito del cliente
+                    pintaCarritoCliente(cliente);
+                    break;
+                case 3: // Eliminamos un producto del carro
+                    // TODO cambiar la manera de seleccionar el producto y pintar antes el carrito
+                    eliminaProductoCarrito(controlador,cliente);
+                    break;
+                case 4: // Confirmamos el pedido
+                    break;
+                case 5: // Cancelamos el pedido
+                    break;
+                case 6: // Salimos al menú principal
+                    System.out.print("Saliendo del menú ");
+                    Utils.cargando();
+                    break;
+                default:
+                    System.out.println("Opción introducida incorrecta");
+                    break;
+
+            }
+        } while (op != 6);
+    }
+
+    private static void eliminaProductoCarrito(Controlador controlador,Cliente cliente) {
+        do {
+            Utils.limpiaPantalla();
+            int numProducto = -1;
+            pintaCatalogoParaSeleccion(controlador);
+            System.out.print("Introduce el número del producto deseado: ");
+            try {
+                numProducto = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto");
+            }
+            if (numProducto < 0 || numProducto >= controlador.getCatalogo().size())
+                System.out.println("El producto que ha seleccionado no existe");
+            else {
+                if (cliente.quitaProductoCarro(controlador.getCatalogo().get(numProducto - 1).getId()))
+                    System.out.println("El producto ha sido borrado de su carrito correctamente");
+                else System.out.println("El producto que ha seleccionado no ha sido encontrado");
+            }
+
+        } while (!preguntaSiNo().equalsIgnoreCase("n"));
+        Utils.pulsaParaContinuar();
+    }
+
+    private static void pintaCarritoCliente(Cliente cliente) {
+        System.out.println("Su carrito tiene un total de " + cliente.getCarro().size() + " productos.");
+        System.out.println("=======================================================");
+        for (Producto p : cliente.getCarro()) {
+            pintaProductoCarritoCliente(p);
+        }
+        System.out.println();
+        System.out.println("Total sin IVA:\t\t " + cliente.precioCarroSinIVA());
+        System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro());
+        System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA());
+        Utils.pulsaParaContinuar();
+        Utils.limpiaPantalla();
+    }
+
+    private static void pintaProductoCarritoCliente(Producto p) {
+        System.out.println("- " + p.getMarca() + " : " + p.getModelo() + " : " + p.getPrecio());
+    }
+
+    private static void insertaProductoEnCarrito(Controlador controlador, Cliente cliente) {
+        do {
+            Utils.limpiaPantalla();
+            int numProducto = -1;
+            pintaCatalogoParaSeleccion(controlador);
+            System.out.print("Introduce el número del producto deseado: ");
+            try {
+                numProducto = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto");
+            }
+            if (numProducto < 0 || numProducto >= controlador.getCatalogo().size())
+                System.out.println("El producto que ha seleccionado no existe");
+            else {
+                cliente.addProductoCarro(controlador.getCatalogo().get(numProducto - 1));
+                System.out.println("El producto ha sido añadido correctamente");
+            }
+
+        } while (!preguntaSiNo().equalsIgnoreCase("n"));
+        Utils.pulsaParaContinuar();
+    }
+
+    private static void pintaCatalogoParaSeleccion(Controlador controlador) {
+        int contador = 1;
+        for (Producto p : controlador.getCatalogo()) {
+            pintaProductoParaSeleccion(contador, p);
+            contador++;
+        }
+        System.out.println();
+    }
+
+    private static void pintaProductoParaSeleccion(int contador, Producto p) {
+        System.out.println(contador + ".- " + p.getMarca() + " - " + p.getModelo() + " - " + p.getPrecio());
     }
 
     private static void menuVisionadoCatalogo(Controlador controlador) {
@@ -152,7 +277,7 @@ public class main {
                     float precioMinimo = Float.parseFloat(S.nextLine());
                     System.out.print("Introduzca el precio máximo que está buscando: ");
                     float precioMaximo = Float.parseFloat(S.nextLine());
-                    resultados = controlador.buscaProductoByPrecio(precioMinimo,precioMaximo);
+                    resultados = controlador.buscaProductoByPrecio(precioMinimo, precioMaximo);
                     if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
                     else pintaProductos(resultados);
                     Utils.pulsaParaContinuar();
@@ -294,7 +419,7 @@ public class main {
     private static String preguntaSiNo() {
         String op;
         do {
-            System.out.println("¿Quieres seguir viendo el catálogo?(S/N)");
+            System.out.println("¿Quieres continuar?(S/N)");
             op = S.nextLine();
         } while (!op.equalsIgnoreCase("S") && !op.equalsIgnoreCase("N"));
         return op;

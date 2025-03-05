@@ -20,6 +20,12 @@ public class Controlador {
         trabajadores = new ArrayList<>();
         admins = new ArrayList<>();
         catalogo = DataProductos.getProductosMock();
+        mock();
+    }
+
+    private void mock() {
+        clientes.add(new Cliente(generaIdCliente(),"a@","1234","amai","el villar",
+                "jaen","calle calle",123456789));
     }
 
     // Getters y Setters
@@ -86,18 +92,20 @@ public class Controlador {
 
     // Metodo que devuelve un producto según el id introducido
     public Producto buscaProductoById (int id) {
-        for (Producto p : catalogo) {
+        for (Producto p : catalogo)
             if (p.getId() == id) return p;
-        }
         return null;
     }
 
     // TODO preguntar a Carlos que hace este método
-    public boolean confirmaPedidoCliente (int id) {
+    // TODO confirma el carrito de un cliente y lo vuelve un pedido
+    public boolean confirmaPedidoCliente (int idCliente) {
         for (Cliente c : clientes) {
-            for (Pedido p : c.getPedidos()) {
-                if (p.getId() == id) return true;
-
+            if (c.getId() == idCliente) {
+                Pedido pedidoAgregado = new Pedido(generaIdPedido());
+                pedidoAgregado.getProductos().addAll(c.getCarro());
+                c.vaciaCarro();
+                return true;
             }
         }
         return false;
@@ -221,29 +229,67 @@ public class Controlador {
         return false;
     }
 
+    //TODO hacer que estos comprueben si los ids existen
+
     // Metodo que genera automáticamente el id de un cliente
     private int generaIdCliente () {
-        return (int) (Math.random() * 1000000) + 2000000;
+        int id;
+        do {
+            id = (int) (Math.random() * 1000000) + 2000000;
+        } while (buscaClienteById(id) != null);
+        return id;
     }
 
 
 
     // Metodo que genera automáticamente el id de un trabajador
     private int generaIdTrabajador () {
-        return (int) (Math.random() * 1000000) + 3000000;
+        int id;
+        do {
+            id = (int) (Math.random() * 1000000) + 3000000;
+        } while (buscaTrabajadorById(id) != null);
+        return id;
+    }
+
+    private Trabajador buscaTrabajadorById(int id) {
+        for (Trabajador t : trabajadores) {
+            if (t.getId() == id) return t;
+        }
+        return null;
     }
 
     // Metodo que genera automáticamente el id de un admin
     private int generaIdAdmin () {
-        return (int) (Math.random() * 1000000) + 4000000;
+        int id;
+        do {
+            id = (int) (Math.random() * 1000000) + 4000000;
+        } while (buscaAdminById(id) != null);
+        return id;
+    }
+
+    private Admin buscaAdminById(int id) {
+        for (Admin a : admins) {
+            if (a.getId() == id) return a;
+        }
+        return null;
     }
 
 
     // Metodo que genera automáticamente el id de un pedido
     private int generaIdPedido () {
-        return (int) (Math.random() * 1000000) + 60000000;
+        int id;
+        do {
+            id = (int) (Math.random() * 1000000) + 5000000;
+        } while (buscaPedidoById(id) != null);
+        return id;
     }
 
+    private Pedido buscaPedidoById(int id) {
+        for (Pedido p : getTodosPedidos()) {
+            if (p.getId() == id) return p;
+        }
+        return null;
+    }
 
 
 }
