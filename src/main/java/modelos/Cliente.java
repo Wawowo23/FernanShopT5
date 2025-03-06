@@ -196,6 +196,30 @@ public class Cliente {
         return false;
     }
 
+    public ArrayList<Pedido> getPedidosPendientesEntrega () {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : pedidos) {
+            if (p.getEstado() != 3 && p.getEstado() != 4) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
+
+    public ArrayList<Pedido> getPedidosCancelados () {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : pedidos) {
+            if (p.getEstado() == 4) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
+
+    public ArrayList<Pedido> getPedidosEntregados () {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : pedidos) {
+            if (p.getEstado() == 3) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
+
     @Override
     public String toString() {
         return "Cliente{" +

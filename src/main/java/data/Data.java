@@ -6,9 +6,8 @@ public class Data {
             case 0 -> "Procesando";
             case 1 -> "En preparación";
             case 2 -> "Enviado";
-            case 3 -> "Retrasado";
+            case 3 -> "Entregado";
             case 4 -> "Cancelado";
-            case 5 -> "Entregado";
 
             default -> "-1";
         };

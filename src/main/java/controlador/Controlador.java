@@ -97,14 +97,14 @@ public class Controlador {
         return null;
     }
 
-    // TODO preguntar a Carlos que hace este método
-    // TODO confirma el carrito de un cliente y lo vuelve un pedido
+
     public boolean confirmaPedidoCliente (int idCliente) {
         for (Cliente c : clientes) {
             if (c.getId() == idCliente) {
                 Pedido pedidoAgregado = new Pedido(generaIdPedido());
                 pedidoAgregado.getProductos().addAll(c.getCarro());
                 c.vaciaCarro();
+                c.addPedido(pedidoAgregado);
                 return true;
             }
         }

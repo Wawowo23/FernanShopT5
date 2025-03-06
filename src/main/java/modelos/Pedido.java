@@ -102,7 +102,7 @@ public class Pedido implements Comparable<Pedido>{
 
     // Metodo que cambia el estado de un paquete
     public boolean cambiaEstado (int nuevoEstado) {
-        if (nuevoEstado < 0 || nuevoEstado > 5) return false;
+        if (nuevoEstado < 0 || nuevoEstado > 4) return false;
         setEstado(nuevoEstado);
         return true;
     }
@@ -151,6 +151,25 @@ public class Pedido implements Comparable<Pedido>{
         productos.add(producto);
     }
 
+    // Metodo que calcula el precio total de un carro sin iva
+    public float precioPedidoSinIVA () {
+        float precio = 0;
+        for (Producto p : productos) {
+            precio += p.getPrecio();
+        }
+        return precio;
+    }
+
+    // Metodo que calcula el precio del iva de un carro
+    public float precioIVAPedido () {
+        return (float) (precioPedidoSinIVA() * Data.IVA());
+    }
+
+    // Metodo que calcula el precio de un carro con el IVA incluido
+    public float precioPedidoConIVA () {
+        return precioPedidoSinIVA() + precioIVAPedido();
+    }
+
     @Override
     public String toString() {
         return "Pedido{" +
@@ -168,4 +187,5 @@ public class Pedido implements Comparable<Pedido>{
     public int compareTo(Pedido pedido) {
         return this.fechaPedido.compareTo(pedido.getFechaPedido());
     }
+
 }

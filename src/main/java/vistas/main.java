@@ -1,14 +1,14 @@
 package vistas;
 
 import controlador.Controlador;
-import modelos.Admin;
-import modelos.Cliente;
-import modelos.Producto;
-import modelos.Trabajador;
+import data.Data;
+import modelos.*;
 import utils.Menus;
 import utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Scanner;
 
 public class main {
@@ -23,6 +23,7 @@ public class main {
                 menuUsuario(controlador, user);
             }
         } while (true);
+
     }
 
     private static void menuUsuario(Controlador controlador, Object user) {
@@ -74,7 +75,8 @@ public class main {
                 case 2: // Realiza pedido
                     subMenuPedidoCliente(controlador, clienteTemp);
                     break;
-                case 3:
+                case 3: // Ver pedidos del cliente
+                    pintaPedidosCliente(controlador,clienteTemp);
                     break;
                 case 4:
                     break;
@@ -89,6 +91,68 @@ public class main {
                     break;
             }
         } while (op != 6);
+    }
+
+    private static void pintaPedidosCliente(Controlador controlador, Cliente clienteTemp) {
+        if (clienteTemp.getPedidos().isEmpty()) System.out.println("Aún no tiene ningún producto en su carrito");
+        else {
+            Collections.sort(clienteTemp.getPedidos());
+            System.out.println("Pedidos pendientes de entrega: ");
+            System.out.println("============================");
+            for (Pedido p : clienteTemp.getPedidosPendientesEntrega()) {
+                System.out.println();
+                pintaPedidoParaCliente(p,clienteTemp);
+                System.out.println();
+
+            }
+            Utils.pulsaParaContinuar();
+            if (!clienteTemp.getPedidosCancelados().isEmpty()) {
+                System.out.println("Pedidos cancelados: ");
+                System.out.println("============================");
+                for (Pedido p : clienteTemp.getPedidosCancelados()) {
+                    System.out.println();
+                    pintaPedidoParaCliente(p, clienteTemp);
+                    System.out.println();
+
+                }
+            }
+            if (!clienteTemp.getPedidosEntregados().isEmpty()) {
+                Utils.pulsaParaContinuar();
+                System.out.println("Pedidos entregados: ");
+                System.out.println("============================");
+                for (Pedido p : clienteTemp.getPedidosEntregados()) {
+                    System.out.println();
+                    pintaPedidoParaCliente(p, clienteTemp);
+                    System.out.println();
+
+                }
+            }
+        }
+
+    }
+
+    private static void pintaPedidoParaCliente(Pedido p, Cliente clienteTemp) {
+        System.out.println("============ Id: " + p.getId() + " ============");
+        System.out.println();
+        System.out.println("Cliente : " + clienteTemp.getNombre());
+        System.out.println("Localidad: " + clienteTemp.getLocalidad());
+        System.out.println("Dirección de envío: " + clienteTemp.getDireccion());
+        System.out.println("Estado del Pedido: " + Data.getEstadoPedido(p.getEstado()));
+        System.out.println("Comentario del Pedido: " + p.getComentario());
+        System.out.println("Fecha estimada de entrega: " + p.getFechaEntregaEstimada());
+        System.out.println();
+        System.out.println("Productos del pedido: ");
+        for (Producto producto : p.getProductos()) {
+            pintaProductoParaPedidoCliente(producto);
+        }
+        System.out.println();
+        System.out.println("Total del pedido: " + p.precioPedidoConIVA() + " euros.");
+
+    }
+
+    private static void pintaProductoParaPedidoCliente(Producto producto) {
+        System.out.println("- " + producto.getMarca() + " || " +
+                producto.getModelo() + " || " + producto.getPrecio() + " || ");
     }
 
     private static void subMenuPedidoCliente(Controlador controlador, Cliente cliente) {
@@ -117,14 +181,17 @@ public class main {
                     break;
                 case 2: // Mostramos los productos del carrito del cliente
                     pintaCarritoCliente(cliente);
+                    Utils.pulsaParaContinuar();
                     break;
                 case 3: // Eliminamos un producto del carro
                     // TODO cambiar la manera de seleccionar el producto y pintar antes el carrito
                     eliminaProductoCarrito(controlador,cliente);
                     break;
                 case 4: // Confirmamos el pedido
+                    confirmaPedidoCliente(controlador,cliente);
                     break;
                 case 5: // Cancelamos el pedido
+                    cancelaPedidoCliente(controlador,cliente);
                     break;
                 case 6: // Salimos al menú principal
                     System.out.print("Saliendo del menú ");
@@ -138,45 +205,77 @@ public class main {
         } while (op != 6);
     }
 
-    private static void eliminaProductoCarrito(Controlador controlador,Cliente cliente) {
-        do {
-            Utils.limpiaPantalla();
-            int numProducto = -1;
-            pintaCatalogoParaSeleccion(controlador);
-            System.out.print("Introduce el número del producto deseado: ");
-            try {
-                numProducto = Integer.parseInt(S.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("ERROR. El formato introducido es incorrecto");
-            }
-            if (numProducto < 0 || numProducto >= controlador.getCatalogo().size())
-                System.out.println("El producto que ha seleccionado no existe");
-            else {
-                if (cliente.quitaProductoCarro(controlador.getCatalogo().get(numProducto - 1).getId()))
-                    System.out.println("El producto ha sido borrado de su carrito correctamente");
-                else System.out.println("El producto que ha seleccionado no ha sido encontrado");
-            }
+    private static void cancelaPedidoCliente(Controlador controlador, Cliente cliente) {
+        if (cliente.getPedidos().isEmpty()) System.out.println("Aún no tiene ningún producto en su carrito");
+        else {
 
-        } while (!preguntaSiNo().equalsIgnoreCase("n"));
+        }
+        Utils.pulsaParaContinuar();
+    }
+
+    private static void confirmaPedidoCliente(Controlador controlador, Cliente cliente) {
+        if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
+        else {
+            System.out.println("Bienvenido a la confirmación de su pedido. Este es su carrito actualmente:");
+            pintaCarritoCliente(cliente);
+            if (preguntaSiNo().equalsIgnoreCase("s")) {
+                if (controlador.confirmaPedidoCliente(cliente.getId()))
+                    System.out.println("Su pedido ha sido confirmado correctamente");
+                else System.out.println("Ha ocurrido un error al confirmar su pedido");
+            } else {
+                System.out.println("Volviendo al menú");
+                Utils.cargando();
+            }
+        }
+        Utils.pulsaParaContinuar();
+    }
+
+    private static void eliminaProductoCarrito(Controlador controlador,Cliente cliente) {
+        if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
+        else {
+            do {
+                Utils.limpiaPantalla();
+                int numProducto = -1;
+                pintaCarritoCliente(cliente);
+                System.out.print("Introduce el número del producto deseado: ");
+                try {
+                    numProducto = Integer.parseInt(S.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR. El formato introducido es incorrecto");
+                }
+                if (numProducto < 1 || numProducto >= cliente.getCarro().size())
+                    System.out.println("El producto que ha seleccionado no existe");
+                else {
+                    if (cliente.quitaProductoCarro(cliente.getCarro().get(numProducto - 1).getId()))
+                        System.out.println("El producto ha sido borrado de su carrito correctamente");
+                    else System.out.println("El producto que ha seleccionado no ha sido encontrado");
+                }
+
+            } while (!preguntaSiNo().equalsIgnoreCase("n"));
+        }
         Utils.pulsaParaContinuar();
     }
 
     private static void pintaCarritoCliente(Cliente cliente) {
-        System.out.println("Su carrito tiene un total de " + cliente.getCarro().size() + " productos.");
-        System.out.println("=======================================================");
-        for (Producto p : cliente.getCarro()) {
-            pintaProductoCarritoCliente(p);
+        if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
+        else {
+            int contador = 1;
+            System.out.println("Su carrito tiene un total de " + cliente.numProductosCarro() + " productos.");
+            System.out.println("=======================================================");
+            for (Producto p : cliente.getCarro()) {
+                pintaProductoCarritoCliente(p, contador);
+                contador++;
+            }
+            System.out.println();
+            System.out.println("Total sin IVA:\t\t " + cliente.precioCarroSinIVA());
+            System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro());
+            System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA());
         }
-        System.out.println();
-        System.out.println("Total sin IVA:\t\t " + cliente.precioCarroSinIVA());
-        System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro());
-        System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA());
-        Utils.pulsaParaContinuar();
-        Utils.limpiaPantalla();
+
     }
 
-    private static void pintaProductoCarritoCliente(Producto p) {
-        System.out.println("- " + p.getMarca() + " : " + p.getModelo() + " : " + p.getPrecio());
+    private static void pintaProductoCarritoCliente(Producto p, int contador) {
+        System.out.println(contador + "- " + p.getMarca() + " : " + p.getModelo() + " : " + p.getPrecio());
     }
 
     private static void insertaProductoEnCarrito(Controlador controlador, Cliente cliente) {
