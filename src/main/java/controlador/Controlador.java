@@ -292,4 +292,30 @@ public class Controlador {
     }
 
 
+    public Cliente buscaClienteByCorreo(String email) {
+        for (Cliente c : clientes) {
+            if (c.getEmail().equals(email)) return c;
+        }
+        return null;
+    }
+
+    public boolean cambiaEstadoPedido(int idPedido, int nuevoEstado) {
+        Pedido temp = buscaPedidoById(idPedido);
+        if (temp == null) return false;
+        return temp.cambiaEstado(nuevoEstado);
+
+    }
+
+    public boolean nuevoTrabajador(String email, String clave, String nombre, int movil) {
+        if (buscaTrabajadorByEmail(email) != null) return false;
+        return trabajadores.add(new Trabajador(generaIdTrabajador(),nombre,clave,email,movil));
+
+    }
+
+    public Trabajador buscaTrabajadorByEmail(String email) {
+        for (Trabajador t : trabajadores) {
+            if (t.getEmail().equals(email)) return t;
+        }
+        return null;
+    }
 }

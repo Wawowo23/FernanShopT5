@@ -3,6 +3,7 @@ package vistas;
 import controlador.Controlador;
 import data.Data;
 import modelos.*;
+import utils.Comunicaciones;
 import utils.Menus;
 import utils.Utils;
 
@@ -28,6 +29,7 @@ public class main {
 
     private static void menuUsuario(Controlador controlador, Object user) {
         if (user instanceof Cliente clienteTemp) {
+            if (!clienteTemp.isActivado()) Comunicaciones.verificacionDeCorreo(clienteTemp.getEmail());
             menuCliente(controlador, clienteTemp);
         }
         if (user instanceof Trabajador trabajadorTemp) {
@@ -78,9 +80,11 @@ public class main {
                 case 3: // Ver pedidos del cliente
                     pintaPedidosCliente(controlador,clienteTemp);
                     break;
-                case 4:
+                case 4: // Ver mis datos personales
+                    pintaDatosClienteParaCliente(clienteTemp);
                     break;
-                case 5:
+                case 5: // Modificar mis datos personales
+                    modificaDatosCliente(clienteTemp,controlador);
                     break;
                 case 6:
                     System.out.print("Hasta la próxima");
@@ -90,7 +94,102 @@ public class main {
                     System.out.println("Opción introducida incorrecta");
                     break;
             }
+            Utils.pulsaParaContinuar();
+            Utils.limpiaPantalla();
         } while (op != 6);
+    }
+
+    private static void modificaDatosCliente(Cliente clienteTemp, Controlador controlador) {
+        int op = -1;
+        System.out.println("Estos son tus datos: ");
+        pintaDatosClienteParaSeleccionar(clienteTemp);
+        System.out.print("Introduzca el número correspondiente al dato que quiere cambiar: ");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato que ha introducido es incorrecto");
+        }
+        if (cambiaDatoCliente(controlador,clienteTemp,op))
+            System.out.println("El dato ha sido cambiado correctamente");
+        else System.out.println("Ha ocurrido un problema al cambiar sus datos");
+    }
+
+    private static boolean cambiaDatoCliente(Controlador controlador, Cliente clienteTemp, int op) {
+        switch (op) {
+            case 1: // Cambia nombre
+                System.out.println("Introduzca su nuevo nombre");
+                clienteTemp.setNombre(S.nextLine());
+                return true;
+            case 2: // Cambia Provincia
+                System.out.println("Introduzca su nueva provincia");
+                clienteTemp.setProvincia(S.nextLine());
+                return true;
+            case 3: // Cambia Localidad
+                System.out.println("Introduzca su nueva localidad");
+                clienteTemp.setLocalidad(S.nextLine());
+                return true;
+            case 4: // Cambia Dirección
+                System.out.println("Introduzca su nueva dirección");
+                clienteTemp.setDireccion(S.nextLine());
+                return true;
+            case 5: // Cambia Teléfono
+                int telefono = -1;
+                do {
+                    System.out.println("Introduzca su nuevo teléfono");
+                    try {
+                        telefono = Integer.parseInt(S.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido es incorrecto.");
+                    }
+                } while (telefono > 999999999 || telefono < 100000000);
+                clienteTemp.setTelefono(telefono);
+                return true;
+            case 6: // Cambia Email
+                boolean correoExistente = false;
+                String email = "";
+                do {
+                    correoExistente = false;
+                    System.out.print("Introduzca su nuevo email: ");
+                    email = S.nextLine();
+                    if (!email.contains("@")) System.out.println("El correo introducido no es válido");
+                    if (controlador.buscaClienteByCorreo(email) != null) {
+                        System.out.println("El correo introducido ya existe");
+                        correoExistente = true;
+                    }
+                } while (!email.contains("@") || correoExistente);
+                clienteTemp.setActivado(false);
+                clienteTemp.setEmail(email);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static void pintaDatosClienteParaSeleccionar(Cliente clienteTemp) {
+        System.out.println("=====================================");
+        System.out.println();
+        System.out.println("1.- Cliente: " + clienteTemp.getNombre());
+        System.out.println("2.- Provincia: " + clienteTemp.getProvincia());
+        System.out.println("3.- Localidad: " + clienteTemp.getLocalidad());
+        System.out.println("4.- Dirección: " + clienteTemp.getDireccion());
+        System.out.println("5.- Teléfono: " + clienteTemp.getTelefono());
+        System.out.println("6.- Correo electrónico: " + clienteTemp.getEmail());
+        System.out.println();
+        System.out.println("=====================================");
+    }
+
+    private static void pintaDatosClienteParaCliente(Cliente clienteTemp) {
+        System.out.println("=====================================");
+        System.out.println();
+        System.out.println("Cliente: " + clienteTemp.getNombre());
+        System.out.println("Provincia: " + clienteTemp.getProvincia());
+        System.out.println("Localidad: " + clienteTemp.getLocalidad());
+        System.out.println("Dirección: " + clienteTemp.getDireccion());
+        System.out.println("Teléfono: " + clienteTemp.getTelefono());
+        System.out.println("Correo electrónico: " + clienteTemp.getEmail());
+        System.out.println();
+        System.out.println("=====================================");
+
     }
 
     private static void pintaPedidosCliente(Controlador controlador, Cliente clienteTemp) {
@@ -105,8 +204,9 @@ public class main {
                 System.out.println();
 
             }
-            Utils.pulsaParaContinuar();
+
             if (!clienteTemp.getPedidosCancelados().isEmpty()) {
+                Utils.pulsaParaContinuar();
                 System.out.println("Pedidos cancelados: ");
                 System.out.println("============================");
                 for (Pedido p : clienteTemp.getPedidosCancelados()) {
@@ -128,6 +228,7 @@ public class main {
                 }
             }
         }
+
 
     }
 
@@ -208,9 +309,38 @@ public class main {
     private static void cancelaPedidoCliente(Controlador controlador, Cliente cliente) {
         if (cliente.getPedidos().isEmpty()) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
-
+            int numPedido = -1;
+            pintaPedidosParaSeleccionCliente(cliente);
+            System.out.print("Introduzca el pedido que desee cancelar: ");
+            try {
+                numPedido = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto");
+            }
+            if (cliente.cancelaPedido(cliente.getPedidosPendientesEntrega().get(numPedido - 1).getId()))
+                System.out.println("Pedido cancelado correctamente");
+            else System.out.println("Ha ocurrido un error al cancelar el pedido");
         }
         Utils.pulsaParaContinuar();
+    }
+
+    private static void pintaPedidosParaSeleccionCliente(Cliente cliente) {
+        Collections.sort(cliente.getPedidos());
+        int contador = 1;
+        for (Pedido p : cliente.getPedidosPendientesEntrega()) {
+            System.out.println();
+            System.out.print(contador + ".-");
+            pintaPedidoParaSeleccionCliente(p);
+            System.out.println();
+            contador++;
+        }
+    }
+
+    private static void pintaPedidoParaSeleccionCliente(Pedido p) {
+        System.out.print("Id: " + p.getId() + ". " + Data.getEstadoPedido(p.getEstado()) + "\n");
+        for (Producto producto : p.getProductos()) {
+            System.out.println("\t- " + producto.getModelo());
+        }
     }
 
     private static void confirmaPedidoCliente(Controlador controlador, Cliente cliente) {
@@ -338,6 +468,7 @@ public class main {
             switch (op) {
                 case 1: // Catálogo completo
                     pintaCatalogo(controlador);
+                    Utils.pulsaParaContinuar();
                     break;
                 case 2: // Búsqueda por marca
                     System.out.print("Introduzca la marca que está buscando: ");
@@ -439,12 +570,18 @@ public class main {
     private static void registroCliente(Controlador controlador) {
         int telefono = 0;
         String email = "";
+        boolean correoExistente = false;
         System.out.println("Bienvenido al menú de registro");
         do {
+            correoExistente = false;
             System.out.print("Introduzca su email: ");
             email = S.nextLine();
             if (!email.contains("@")) System.out.println("El correo introducido no es válido");
-        } while (!email.contains("@"));
+            if (controlador.buscaClienteByCorreo(email) != null) {
+                System.out.println("El correo introducido ya existe");
+                correoExistente = true;
+            }
+        } while (!email.contains("@") || correoExistente);
         System.out.print("Introduzca su contraseña: ");
         String clave = S.nextLine();
         System.out.print("Introduzca su nombre: ");
@@ -464,8 +601,11 @@ public class main {
             }
         } while (telefono > 999999999 || telefono < 100000000);
 
-        if (controlador.registraCliente(email, clave, nombre, localidad, provincia, direccion, telefono))
+        if (controlador.registraCliente(email, clave, nombre, localidad, provincia, direccion, telefono)) {
             System.out.println("Se ha registrado correctamente");
+            System.out.println("Aún tiene que verificar su correo");
+            if (preguntaSiNo().equalsIgnoreCase("s")) Comunicaciones.verificacionDeCorreo(email);
+        }
         else System.out.println("Ha ocurrido un problema a la hora de registrarse");
         Utils.limpiaPantalla();
     }

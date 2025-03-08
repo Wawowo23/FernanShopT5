@@ -15,6 +15,7 @@ public class Cliente {
     private String provincia;
     private String direccion;
     private int telefono;
+    private boolean activado;
     private ArrayList<Pedido> pedidos;
     private ArrayList<Producto> carro;
 
@@ -29,6 +30,7 @@ public class Cliente {
         this.provincia = provincia;
         this.direccion = direccion;
         this.telefono = telefono;
+        activado = false;
         pedidos = new ArrayList<>();
         carro = new ArrayList<>();
     }
@@ -44,6 +46,7 @@ public class Cliente {
         provincia = cliente.provincia;
         direccion = cliente.direccion;
         telefono = cliente.telefono;
+        activado = cliente.activado;
         pedidos = new ArrayList<>(cliente.pedidos);
         carro = new ArrayList<>(cliente.carro);
     }
@@ -128,6 +131,14 @@ public class Cliente {
 
     public void setCarro(ArrayList<Producto> carro) {
         this.carro = carro;
+    }
+
+    public boolean isActivado() {
+        return activado;
+    }
+
+    public void setActivado(boolean activado) {
+        this.activado = activado;
     }
 
     // Otros métodos
@@ -242,5 +253,16 @@ public class Cliente {
             if (p.getEstado() != 5 && p.getEstado() != 4) pedidosPendientes.add(p);
         }
         return pedidosPendientes;
+    }
+
+    // TODO no sé si estoy haciendo demasiados metodos nuevos
+    public boolean cancelaPedido(int id) {
+        for (Pedido p : pedidos) {
+            if (p.getId() == id) {
+                p.setEstado(4);
+                return true;
+            }
+        }
+        return false;
     }
 }
