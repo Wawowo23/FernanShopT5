@@ -1,5 +1,7 @@
 package utils;
 
+import controlador.Controlador;
+import modelos.Admin;
 import modelos.Cliente;
 import modelos.Trabajador;
 
@@ -74,5 +76,38 @@ public class Menus {
                 trabajadorTemp.getPedidosPendientes().size(),
                 ((trabajadorTemp.getPedidosPendientes().size() == 1) ? "pedido pendiente"
                         : "pedidos pendientes"));
+    }
+
+    public static void pintaMenuAdmin(Controlador controlador, Admin adminTemp) {
+        System.out.printf(""" 
+                Bienvenido Administrador. Tienes %d pedido/s sin asignar. Debe asignarlos a un trabajador 
+                ========================================================
+                                  Estadísticas de la APP            
+                Número de clientes: %d            
+                Número de trabajadores: %d
+                Número de pedidos: %d            
+                Número de pedidos pendientes: %d
+                Número de pedidos completados o cancelados: %d            
+                Número de pedidos sin asignar: %d            
+                =========================================================
+                """);
+        System.out.print("""
+                ================================
+                     Menú de operaciones            
+                ================================
+                            
+                1.- Ver todo el catálogo            
+                2.- Editar un producto            
+                3.- Ver un resumen de todos los clientes            
+                4.- Ver un resumen de todos los pedidos            
+                5.- Ver un resumen de todos los trabajadores            
+                6.- Ver las estadísticas de la aplicación            
+                7.- Cambiar el estado de un pedido            
+                8.- Dar de alta un trabajador            
+                9.- Dar de baja un trabajador            
+                10. Asignar un pedido a un trabajador            
+                11.- Salir            
+                
+                Introduzca una opción:\s""");
     }
 }

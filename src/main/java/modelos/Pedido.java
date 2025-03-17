@@ -102,13 +102,14 @@ public class Pedido implements Comparable<Pedido>{
 
     // Metodo que cambia el estado de un paquete
     public boolean cambiaEstado (int nuevoEstado) {
-        if (nuevoEstado < 0 || nuevoEstado > 4) return false;
+        if (nuevoEstado < 1 || nuevoEstado > 4) return false;
         setEstado(nuevoEstado);
         return true;
     }
 
     // Metodo que cambia la fecha estimada de entrega de un paquete
     public boolean cambiaFechaEntrega (LocalDate nuevaFecha) {
+        if (nuevaFecha == null) return false;
         if (nuevaFecha.isBefore(fechaPedido)) return false;
         setFechaEntregaEstimada(nuevaFecha);
         return true;

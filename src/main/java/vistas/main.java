@@ -6,6 +6,8 @@ import utils.Comunicaciones;
 import utils.Menus;
 import utils.Utils;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
@@ -39,8 +41,58 @@ public class main {
     }
 
     private static void menuAdmin(Controlador controlador, Admin adminTemp) {
-
+        int op = -1;
+        
+        do {
+            Menus.pintaMenuAdmin(controlador,adminTemp);
+            
+            try {
+                op = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. Formato introducido incorrecto.");
+            }
+            switch (op) {
+                case 1: // Pintado del catálogo                
+                    // pintaMenuAdminCatalogo(controlador, adminTemp);
+                    break;
+                case 2: // Edición de un producto
+                    //editaProductoAdmin(controlador, adminTemp);
+                    break;
+                case 3: // Resumen de todos los clientes                
+                    // pintaResumenClientes(controlador, adminTemp);
+                    break;
+                case 4: // Resumen de todos los pedidos
+                    //pintaResumenPedidos(controlador, adminTemp);
+                    break;
+                case 5: // Resumen de todos los trabajadores                
+                    // pintaResumenTrabajadores(controlador, adminTemp);
+                    break;
+                case 6: // Estadísticas de la aplicación
+                    //pintaEstadisticasAplicacion(controlador, adminTemp);
+                    break;
+                case 7: // Cambiado del estado de un pedido
+                    //cambiaEstadoPedido(controlador, adminTemp);
+                    break;
+                case 8: // Dar de alta a un trabajador
+                    //darAltaTrabajador(controlador, adminTemp);
+                    break;
+                case 9: // Dar de baja a un trabajador                
+                    // darBajaTrabajador(controlador, adminTemp);
+                    break;
+                case 10: // Asignación de un pedido a un trabajador
+                    //asignaPedidosPorAdmin(controlador, adminTemp);
+                    break;
+                case 11: // Salida                
+                    System.out.println("Saliendo");
+                    Utils.cargando();
+                    break;
+                default:
+                    System.out.println("Opción no válida");
+            }
+        } while (op != 11);
     }
+
+    
 
     private static void menuTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         int op = -1;
@@ -60,8 +112,10 @@ public class main {
                     modificaEstadoPedido(controlador,trabajadorTemp);
                     break;
                 case 3: // Consultar el catálogo de productos
+                    menuVisionadoCatalogo(controlador);
                     break;
                 case 4: // Modificar un producto
+                    modificaProducto(controlador);
                     break;
                 case 5: // Ver el historial de pedidos terminados del trabajador
                     break;
@@ -83,21 +137,166 @@ public class main {
         } while (op != 8);
     }
 
+    private static void modificaProducto(Controlador controlador) {
+        System.out.print("Introduzca el producto que está buscando: ");
+        String termino = S.nextLine();
+        ArrayList <Producto> resultados = controlador.buscaProductosByTermino(termino);
+        if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+        else {
+            pintaProductosParaSeleccion(resultados);
+            int productoSeleccionado = -1;
+            System.out.print("Selecciona el producto que quieres modificar: ");
+            try {
+                productoSeleccionado = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. Formato introducido incorrecto.");
+            }
+            if (productoSeleccionado != -1 &&
+                    (productoSeleccionado > 0 && productoSeleccionado <= resultados.size())) {
+
+                Producto temp = resultados.get(productoSeleccionado - 1);
+                if (menuModificacionProducto(temp))
+                    System.out.println("El producto ha sido modificado correctamente.");
+                else System.out.println("Ha habido un problema al modificar el producto.");
+            }
+
+        }
+    }
+
+    private static boolean menuModificacionProducto(Producto temp) {
+        int op = -1;
+        System.out.print("""
+                1.- Modelo
+                2.- Marca
+                3.- Descripción
+                4.- Precio
+                
+                Introduce la opción:\s""");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        switch (op) {
+            case 1:
+                System.out.print("Introduce el nuevo modelo: ");
+                temp.setModelo(S.nextLine());
+                return true;
+            case 2:
+                System.out.print("Introduce la nueva marca: ");
+                temp.setMarca(S.nextLine());
+                return true;
+            case 3:
+                System.out.print("Introduce la nueva descripción: ");
+                temp.setDescripcion(S.nextLine());
+                return true;
+            case 4:
+                float precio = -1;
+                do {
+                    System.out.print("Introduce el nuevo precio: ");
+                    try {
+                        precio = Float.parseFloat(S.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido incorrecto.");
+                    }
+                } while (precio <= 0);
+                temp.setPrecio(precio);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static void pintaProductosParaSeleccion(ArrayList<Producto> resultados) {
+        int contador = 1;
+        for (Producto p : resultados) {
+            pintaProductoParaSeleccion(contador,p);
+            contador++;
+        }
+        System.out.println();
+    }
+
     private static void modificaEstadoPedido(Controlador controlador, Trabajador trabajadorTemp) {
-        pintaPedidosAsignadosTrabajador(controlador,trabajadorTemp);
-        System.out.print("");
+        if (trabajadorTemp.getPedidosAsignados().isEmpty()) System.out.println("No tienes pedidos asignados");
+        else {
+            int numPedido = -1;
+            pintaPedidosAsignadosTrabajador(controlador, trabajadorTemp);
+            System.out.print("Introduce el pedido: ");
+            try {
+                numPedido = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e ) {
+                System.out.println("ERROR. El formato introducido es incorrecto.");
+            }
+            if (numPedido != -1) {
+                Pedido temp = trabajadorTemp.getPedidosAsignados().get(numPedido - 1);
+                if (modificaPedido(temp)) System.out.println("Se ha modificado correctamente el pedido");
+                else System.out.println("Ha ocurrido un error al modificar el pedido");
+            }
+        }
 
     }
 
-    private static void pintaPedidosAsignadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
-        int contador = 1;
-        System.out.println("Estos son tus pedidos asignados (completados y pendientes)");
-        Collections.sort(trabajadorTemp.getPedidosAsignados());
-        for (PedidoClienteDataClass p : controlador.getPedidosAsignadosTrabajador(trabajadorTemp.getId())) {
-            System.out.println();
-            System.out.print(contador + ".- ");
-            pintaPedidoParaTrabajador(p);
+    private static boolean modificaPedido(Pedido temp) {
+        int op = -1;
+        System.out.print("""
+                =============================================
+                1.- Modifica el estado del pedido
+                2.- Añadir un comentario al pedido
+                3.- Modificar la fecha de entrega estimada
+                =============================================
+                
+                Introduce una opción:\s""");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        switch (op) {
+            case 1:
+                int nuevoEstado = -1;
+                System.out.print("""
+                        1.- En preparación
+                        2.- Enviado
+                        3.- Entregado
+                        4.- Cancelado
+                        """);
+                System.out.print("Introduce el nuevo estado: ");
+                try {
+                    nuevoEstado = Integer.parseInt(S.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR. El formato introducido es incorrecto.");
+                }
+                return temp.cambiaEstado(nuevoEstado);
+            case 2:
+                System.out.print("Introduzca el comentario que quiere añadir: ");
+                temp.setComentario(S.nextLine());
+                return true;
+            case 3:
+                LocalDate nuevaFecha = null;
+                System.out.print("Introduzca la nueva fecha para el paquete (yyyy-mm-dd): ");
+                try {
+                    nuevaFecha = LocalDate.parse(S.nextLine());
+                } catch (DateTimeException e) {
+                    System.out.println("ERROR. Formato introducido incorrecto.");
+                }
+                return temp.cambiaFechaEntrega(nuevaFecha);
+            default:
+                return false;
+        }
+    }
 
+    private static void pintaPedidosAsignadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+        if (trabajadorTemp.getPedidosAsignados().isEmpty()) System.out.println("No tienes pedidos asignados");
+        else {
+            int contador = 1;
+            System.out.println("Estos son tus pedidos asignados (completados y pendientes)");
+            Collections.sort(trabajadorTemp.getPedidosAsignados());
+            for (PedidoClienteDataClass p : controlador.getPedidosAsignadosYCompletados(trabajadorTemp.getId())) {
+                System.out.println();
+                System.out.print(contador + ".- ");
+                pintaPedidoParaTrabajador(p);
+
+            }
         }
     }
 
@@ -541,13 +740,17 @@ public class main {
                     break;
                 case 6: // Búsqueda por precio
                     System.out.print("Introduzca el precio mínimo que está buscando: ");
-                    float precioMinimo = Float.parseFloat(S.nextLine());
-                    System.out.print("Introduzca el precio máximo que está buscando: ");
-                    float precioMaximo = Float.parseFloat(S.nextLine());
-                    resultados = controlador.buscaProductoByPrecio(precioMinimo, precioMaximo);
-                    if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
-                    else pintaProductos(resultados);
-                    Utils.pulsaParaContinuar();
+                    try {
+                        float precioMinimo = Float.parseFloat(S.nextLine());
+                        System.out.print("Introduzca el precio máximo que está buscando: ");
+                        float precioMaximo = Float.parseFloat(S.nextLine());
+                        resultados = controlador.buscaProductoByPrecio(precioMinimo, precioMaximo);
+                        if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+                        else pintaProductos(resultados);
+                        Utils.pulsaParaContinuar();
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido es incorrecto.");
+                    }
                     break;
                 case 7: // Salir
                     break;
@@ -682,11 +885,15 @@ public class main {
     private static void pintaProductoSinRegistro(Producto producto) {
 
         System.out.println("===================================");
-        System.out.println("\t" + producto.getMarca() +
+        if (producto.getRelevancia() > 9) System.out.println("\t******* Promo Especial *******");
+        System.out.println("ID: " + producto.getId());
+        System.out.println("Marca: " +
+                ((producto.getRelevancia() > 9) ? " ⭐ " : "") +
+                producto.getMarca() +
                 ((producto.getRelevancia() > 9) ? " ⭐" : ""));
-        System.out.println("\t" + producto.getModelo());
-        System.out.println("\t" + producto.getDescripcion());
-        System.out.println("\t" + producto.getPrecio());
+        System.out.println("Modelo: " + producto.getModelo());
+        System.out.println("Descripción: " + producto.getDescripcion());
+        System.out.println("Precio: " + producto.getPrecio());
         System.out.println("===================================");
         System.out.println();
 
