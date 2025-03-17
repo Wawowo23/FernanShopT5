@@ -1,0 +1,64 @@
+private static void menuAdmin(Controlador controlador, Admin adminTemp) {
+    System.out.printf("""Bienvenido Administrador. Tienes %d pedido/s sin asignar. Debe asignarlos a un trabajador
+            ========================================================
+                              Estadísticas de la APP
+
+            Número de clientes: %d
+            Número de trabajadores: %d            
+            Número de pedidos: %d
+            Número de pedidos pendientes: %d            
+            Número de pedidos completados o cancelados: %d
+            Número de pedidos sin asignar: %d            
+            =========================================================""");    
+            int op = 0;
+            do {        pintaMenuAdmin(adminTemp);
+              op = Integer.parseInt(S.nextLine());        
+              switch (op) {
+                  case 1: // Pintado del catálogo                
+                      pintaMenuAdminCatalogo(controlador,adminTemp);
+                      break;
+                  case 2: // Edición de un producto
+                      editaProductoAdmin(controlador,adminTemp);                
+                      break;
+                case 3: // Resumen de todos los clientes
+                pintaResumenClientes(controlador,adminTemp);                break;
+                            case 4: // Resumen de todos los pedidos
+                pintaResumenPedidos(controlador,adminTemp);                break;
+                            case 5: // Resumen de todos los trabajadores
+                pintaResumenTrabajadores(controlador,adminTemp);                break;
+                            case 6: // Estadísticas de la aplicación
+                pintaEstadisticasAplicacion(controlador,adminTemp);                break;
+                            case 7: // Cambiado del estado de un pedido
+                cambiaEstadoPedido(controlador,adminTemp);                break;
+                            case 8: // Dar de alta a un trabajador
+                darAltaTrabajador(controlador,adminTemp);                break;
+                            case 9: // Dar de baja a un trabajador
+                darBajaTrabajador(controlador,adminTemp);                break;
+                            case 10: // Asignación de un pedido a un trabajador
+                asignaPedidosPorAdmin(controlador,adminTemp);                break;
+                            case 11: // Salida
+                System.out.println("Saliendo");
+                Utils.cargando();                break;
+                            default:
+                System.out.println("Opción no válida");        }
+    } while (op != 11);
+}
+
+private static void pintaMenuAdmin(Admin adminTemp) {    
+          System.out.print("""
+            ================================
+                   Menú de operaciones            
+            ================================
+            1.- Ver todo el catálogo            
+            2.- Editar un producto
+            3.- Ver un resumen de todos los clientes            
+            4.- Ver un resumen de todos los pedidos
+            5.- Ver un resumen de todos los trabajadores            
+            6.- Ver las estadísticas de la aplicación
+            7.- Cambiar el estado de un pedido            
+            8.- Dar de alta un trabajador
+            9.- Dar de baja un trabajador            
+            10. Asignar un pedido a un trabajador
+            11.- Salir            
+            Introduzca una opción:\s""");
+}
