@@ -1,6 +1,6 @@
 package modelos;
 
-import data.Data;
+import utils.Utils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -114,24 +114,8 @@ public class Pedido implements Comparable<Pedido>{
         return true;
     }
 
-    // Metodo que calcula el precio total de un pedido sin IVA
-    public float calculaPrecioSinIVA () {
-        float precioTotal = 0;
-        for (Producto producto : productos) {
-            if (producto != null) precioTotal += producto.getPrecio();
-        }
-        return precioTotal;
-    }
 
-    // Metodo que calcula el IVA de un pedido
-    public float calculaIVAPedido() {
-        return calculaPrecioSinIVA() * Data.IVA();
-    }
 
-    // Metodo que calcula el precio total de un pedido incluyendo el IVA.
-    public float calculaPrecioPedidoConIVA() {
-        return calculaIVAPedido() + calculaPrecioSinIVA();
-    }
 
     // Metodo que calcula el número de articulos que tiene un pedido
     public int numeroArticulos() {
@@ -161,13 +145,13 @@ public class Pedido implements Comparable<Pedido>{
     }
 
     // Metodo que calcula el precio del iva de un carro
-    public float precioIVAPedido () {
-        return (float) (precioPedidoSinIVA() * Data.IVA());
+    public float precioIVAPedido (int iva) {
+        return (float) (precioPedidoSinIVA() * iva) / 100;
     }
 
     // Metodo que calcula el precio de un carro con el IVA incluido
-    public float precioPedidoConIVA () {
-        return precioPedidoSinIVA() + precioIVAPedido();
+    public float precioPedidoConIVA (int iva) {
+        return precioPedidoSinIVA() + precioIVAPedido(iva);
     }
 
     @Override
@@ -177,7 +161,7 @@ public class Pedido implements Comparable<Pedido>{
                 ", fechaPedido=" + fechaPedido +
                 ", fechaEntregaEstimada=" + fechaEntregaEstimada +
                 ", deliveryDate=" + deliveryDate +
-                ", estado=" + estado + " " + Data.getEstadoPedido(estado) +
+                ", estado=" + estado + " " + Utils.getEstadoPedido(estado) +
                 ", comentario='" + comentario + '\'' +
                 ", productos=" + productos +
                 '}';

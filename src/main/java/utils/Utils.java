@@ -31,5 +31,26 @@ public class Utils {
         System.out.println();
     }
 
+    public static String preguntaSiNo() {
+        var S = new Scanner(System.in);
+        String op;
+        do {
+            System.out.println("¿Quieres continuar?(S/N)");
+            op = S.nextLine();
+        } while (!op.equalsIgnoreCase("S") && !op.equalsIgnoreCase("N"));
+        return op;
+    }
+
+    public static String getEstadoPedido(int estado) {
+        return switch (estado) {
+            case 0 -> "Procesando";
+            case 1 -> "En preparación";
+            case 2 -> "Enviado";
+            case 3 -> "Entregado";
+            case 4 -> "Cancelado";
+
+            default -> "-1";
+        };
+    }
 
 }

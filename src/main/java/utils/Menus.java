@@ -17,8 +17,8 @@ public class Menus {
                             6.- Salir
                             ==================================
                             
-                            Introduzca su opción:\s""", clienteTemp.getNombre(), clienteTemp.getPedidosPendientes().size(),
-                ((clienteTemp.getPedidosPendientes().size() == 1) ? "pedido pendiente de entrega"
+                            Introduzca su opción:\s""", clienteTemp.getNombre(), clienteTemp.getPedidosPendientesEntrega().size(),
+                ((clienteTemp.getPedidosPendientesEntrega().size() == 1) ? "pedido pendiente de entrega"
                         : "pedidos pendientes de entrega"));
     }
 

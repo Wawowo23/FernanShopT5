@@ -1,6 +1,5 @@
 package controlador;
 
-import data.Data;
 import data.DataProductos;
 import modelos.*;
 
@@ -24,8 +23,9 @@ public class Controlador {
     }
 
     private void mock() {
-        clientes.add(new Cliente(generaIdCliente(),"a@","1234","amai","el villar",
-                "jaen","calle calle",123456789));
+        registraCliente("a@","1234","amai","el villar",
+                "jaen","calle calle",123456789);
+        nuevoTrabajador("b@","0000","nose",98756321);
     }
 
     // Getters y Setters
@@ -83,9 +83,8 @@ public class Controlador {
     public boolean addProductoCarrito(Cliente cliente, int idProducto) {
         for (Cliente c : clientes) {
             if (c.getId() == cliente.getId())
-                for (Producto p : DataProductos.getProductosMock()) {
-                    if (p.getId() == idProducto) return c.getCarro().add(p);
-                }
+                c.addProductoCarro(buscaProductoById(idProducto));
+            return true;
         }
         return false;
     }
@@ -105,6 +104,8 @@ public class Controlador {
                 pedidoAgregado.getProductos().addAll(c.getCarro());
                 c.vaciaCarro();
                 c.addPedido(pedidoAgregado);
+                Trabajador temp  = buscaTrabajadorCandidatoParaAsignar();
+                if (temp != null) asignaPedido(pedidoAgregado.getId(),temp.getId());
                 return true;
             }
         }
@@ -128,7 +129,7 @@ public class Controlador {
                 contadorTrabajadoresIguales++;
             }
         }*/
-        if (hayEmpateTrabajadoresCandidatos(trabajadorElegido)) return null;
+        if (trabajadores.size() > 1) if (hayEmpateTrabajadoresCandidatos(trabajadorElegido)) return null;
         return trabajadorElegido;
     }
 
@@ -318,4 +319,88 @@ public class Controlador {
         }
         return null;
     }
+
+    public Trabajador buscaTrabajadorAsignadoAPedido(int idPedido) {
+        for (Trabajador t : trabajadores) {
+            for (Pedido p : t.getPedidosAsignados())
+                if (p.getId() == idPedido) return t;
+        }
+        return null;
+    }
+
+    public ArrayList<Pedido> pedidosSinTrabajador () {
+        ArrayList<Pedido> pedidosSinTrabajador = new ArrayList<>();
+        for (Pedido p : getTodosPedidos()) {
+            if (buscaTrabajadorAsignadoAPedido(p.getId()) == null) pedidosSinTrabajador.add(p);
+        }
+        return pedidosSinTrabajador;
+    }
+
+    public int numPedidosSinTrabajador () {
+        return pedidosSinTrabajador().size();
+    }
+
+    public boolean asignaPedido(int idPedido, int idTrabajador) {
+        Trabajador trabajador = buscaTrabajadorById(idTrabajador);
+        Pedido pedido = buscaPedidoById(idPedido);
+        if (trabajador == null || pedido == null) return false;
+        return trabajador.asignaPedido(pedido);
+    }
+
+    public ArrayList<PedidoClienteDataClass> getPedidosAsignadosTrabajador(int idTrabajador) {
+        ArrayList<PedidoClienteDataClass> pedidosAsignados = new ArrayList<>();
+        Trabajador temp = buscaTrabajadorById(idTrabajador);
+        if (temp == null) return null;
+        for (Pedido p : temp.getPedidosPendientes()) {
+            Cliente clienteTemp = buscaPropietarioPedido(p.getId());
+            if (clienteTemp != null)
+                pedidosAsignados.add(new PedidoClienteDataClass(p.getId(),clienteTemp.getId(),
+                        clienteTemp.getNombre(), clienteTemp.getProvincia(),clienteTemp.getLocalidad(),
+                        clienteTemp.getDireccion(),clienteTemp.getTelefono(),p.getFechaPedido(),
+                        p.getFechaEntregaEstimada(), p.getEstado(),p.getComentario(),p.getProductos()));
+        }
+
+        return pedidosAsignados;
+    }
+
+    private Cliente buscaPropietarioPedido(int idPedido) {
+        for (Cliente c : clientes) {
+            for (Pedido p : c.getPedidos())
+                if (p.getId() == idPedido) return c;
+        }
+        return null;
+    }
+
+    public Pedido buscaPedidoAsignadoTrabajador (int idTrabajador, int idPedido) {
+        Trabajador temp = buscaTrabajadorById(idTrabajador);
+        if (temp == null) return null;
+        for (Pedido p : temp.getPedidosAsignados())
+            if (p.getId() == idPedido) return p;
+        return null;
+    }
+
+    public ArrayList<PedidoClienteDataClass> getPedidosCompletadosTrabajador(int idTrabajador) {
+        ArrayList<PedidoClienteDataClass> pedidosAsignados = new ArrayList<>();
+        Trabajador temp = buscaTrabajadorById(idTrabajador);
+        if (temp == null) return null;
+        for (Pedido p : temp.getPedidosCompletos()) {
+            Cliente clienteTemp = buscaPropietarioPedido(p.getId());
+            if (clienteTemp != null)
+                pedidosAsignados.add(new PedidoClienteDataClass(p.getId(),clienteTemp.getId(),
+                        clienteTemp.getNombre(), clienteTemp.getProvincia(),clienteTemp.getLocalidad(),
+                        clienteTemp.getDireccion(),clienteTemp.getTelefono(),p.getFechaPedido(),
+                        p.getFechaEntregaEstimada(), p.getEstado(),p.getComentario(),p.getProductos()));
+        }
+
+        return pedidosAsignados;
+    }
+
+    public ArrayList<PedidoClienteDataClass> getPedidosAsignadosYCompletados(int idTrabajador) {
+        ArrayList<PedidoClienteDataClass> resultados = new ArrayList<>();
+        resultados.addAll(getPedidosAsignadosTrabajador(idTrabajador));
+        resultados.addAll(getPedidosCompletadosTrabajador(idTrabajador));
+        return resultados;
+    }
+
+
 }

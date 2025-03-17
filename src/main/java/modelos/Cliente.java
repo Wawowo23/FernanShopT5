@@ -1,9 +1,6 @@
 package modelos;
 
-import data.Data;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Cliente {
     // Atributos
@@ -190,13 +187,13 @@ public class Cliente {
     }
 
     // Metodo que calcula el precio del iva de un carro
-    public float precioIVACarro () {
-        return (float) (precioCarroSinIVA() * Data.IVA());
+    public float precioIVACarro (float iva) {
+        return (float) (precioCarroSinIVA() * iva) / 100;
     }
 
     // Metodo que calcula el precio de un carro con el IVA incluido
-    public float precioCarroConIVA () {
-        return precioCarroSinIVA() + precioIVACarro();
+    public float precioCarroConIVA (float iva) {
+        return precioCarroSinIVA() + precioIVACarro(iva);
     }
 
     // Metodo que comprueba si existe un producto en un carro
@@ -247,13 +244,7 @@ public class Cliente {
                 '}';
     }
 
-    public ArrayList<Pedido> getPedidosPendientes() {
-        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
-        for (Pedido p : pedidos) {
-            if (p.getEstado() != 5 && p.getEstado() != 4) pedidosPendientes.add(p);
-        }
-        return pedidosPendientes;
-    }
+
 
     // TODO no sé si estoy haciendo demasiados metodos nuevos
     public boolean cancelaPedido(int id) {

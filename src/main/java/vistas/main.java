@@ -1,16 +1,13 @@
 package vistas;
 
 import controlador.Controlador;
-import data.Data;
 import modelos.*;
 import utils.Comunicaciones;
 import utils.Menus;
 import utils.Utils;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Scanner;
 
 public class main {
@@ -49,7 +46,76 @@ public class main {
         int op = -1;
         do {
             Menus.pintaMenuPrincipalTrabajador(trabajadorTemp);
+            try {
+                op = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto");
+            }
+            Utils.limpiaPantalla();
+            switch (op) {
+                case 1: // Consultar Pedidos Asignados
+                    pintaPedidosAsignadosTrabajador(controlador,trabajadorTemp);
+                    break;
+                case 2: // Modificar el estado de un pedido
+                    modificaEstadoPedido(controlador,trabajadorTemp);
+                    break;
+                case 3: // Consultar el catálogo de productos
+                    break;
+                case 4: // Modificar un producto
+                    break;
+                case 5: // Ver el historial de pedidos terminados del trabajador
+                    break;
+                case 6: // Ver el perfil del trabajador
+                    break;
+                case 7: // Modificar los datos personales del trabajador
+                    break;
+                case 8: // Salir
+                    System.out.println("Hasta la próxima");
+                    Utils.cargando();
+                    break;
+                default:
+                    System.out.println("Opción introducida incorrecta");
+                    break;
+
+            }
+            Utils.pulsaParaContinuar();
+            Utils.limpiaPantalla();
         } while (op != 8);
+    }
+
+    private static void modificaEstadoPedido(Controlador controlador, Trabajador trabajadorTemp) {
+        pintaPedidosAsignadosTrabajador(controlador,trabajadorTemp);
+        System.out.print("");
+
+    }
+
+    private static void pintaPedidosAsignadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+        int contador = 1;
+        System.out.println("Estos son tus pedidos asignados (completados y pendientes)");
+        Collections.sort(trabajadorTemp.getPedidosAsignados());
+        for (PedidoClienteDataClass p : controlador.getPedidosAsignadosTrabajador(trabajadorTemp.getId())) {
+            System.out.println();
+            System.out.print(contador + ".- ");
+            pintaPedidoParaTrabajador(p);
+
+        }
+    }
+
+    private static void pintaPedidoParaTrabajador(PedidoClienteDataClass p) {
+        System.out.print("============== " + p.getIdPedido() + " ==============\n");
+        System.out.println("Nombre: " + p.getNombreCliente());
+        System.out.println("Dirección: " + p.getDireccion());
+        System.out.println("Localidad: " + p.getLocalidad());
+        System.out.println("Provincia: " + p.getProvincia());
+        System.out.println("Teléfono: " + p.getTelefono());
+        System.out.println("Fecha del pedido: " + p.getFechaPedido());
+        System.out.println("Fecha de entrega estimada: " + p.getFechaEntregaEstimada());
+        System.out.println("Estado: " + Utils.getEstadoPedido(p.getEstado()));
+        System.out.println("Comentario: " + p.getComentario());
+        System.out.println("Detalles del pedido: ");
+        for (Producto producto : p.getProductos()) {
+            pintaProductoParaPedido(producto);
+        }
     }
 
     private static void menuCliente(Controlador controlador, Cliente clienteTemp) {
@@ -230,20 +296,20 @@ public class main {
         System.out.println("Cliente : " + clienteTemp.getNombre());
         System.out.println("Localidad: " + clienteTemp.getLocalidad());
         System.out.println("Dirección de envío: " + clienteTemp.getDireccion());
-        System.out.println("Estado del Pedido: " + Data.getEstadoPedido(p.getEstado()));
+        System.out.println("Estado del Pedido: " + Utils.getEstadoPedido(p.getEstado()));
         System.out.println("Comentario del Pedido: " + p.getComentario());
         System.out.println("Fecha estimada de entrega: " + p.getFechaEntregaEstimada());
         System.out.println();
         System.out.println("Productos del pedido: ");
         for (Producto producto : p.getProductos()) {
-            pintaProductoParaPedidoCliente(producto);
+            pintaProductoParaPedido(producto);
         }
         System.out.println();
-        System.out.println("Total del pedido: " + p.precioPedidoConIVA() + " euros.");
+        System.out.println("Total del pedido: " + p.precioPedidoConIVA(16) + " euros.");
 
     }
 
-    private static void pintaProductoParaPedidoCliente(Producto producto) {
+    private static void pintaProductoParaPedido(Producto producto) {
         System.out.println("- " + producto.getMarca() + " || " +
                 producto.getModelo() + " || " + producto.getPrecio() + " || ");
     }
@@ -318,7 +384,7 @@ public class main {
     }
 
     private static void pintaPedidoParaSeleccionCliente(Pedido p) {
-        System.out.print("Id: " + p.getId() + ". " + Data.getEstadoPedido(p.getEstado()) + "\n");
+        System.out.print("Id: " + p.getId() + ". " + Utils.getEstadoPedido(p.getEstado()) + "\n");
         for (Producto producto : p.getProductos()) {
             System.out.println("\t- " + producto.getModelo());
         }
@@ -329,9 +395,10 @@ public class main {
         else {
             System.out.println("Bienvenido a la confirmación de su pedido. Este es su carrito actualmente:");
             pintaCarritoCliente(cliente);
-            if (preguntaSiNo().equalsIgnoreCase("s")) {
+            if (Utils.preguntaSiNo().equalsIgnoreCase("s")) {
                 if (controlador.confirmaPedidoCliente(cliente.getId()))
                     System.out.println("Su pedido ha sido confirmado correctamente");
+
                 else System.out.println("Ha ocurrido un error al confirmar su pedido");
             } else {
                 System.out.println("Volviendo al menú");
@@ -362,7 +429,7 @@ public class main {
                     else System.out.println("El producto que ha seleccionado no ha sido encontrado");
                 }
 
-            } while (!preguntaSiNo().equalsIgnoreCase("n"));
+            } while (Utils.preguntaSiNo().equalsIgnoreCase("s"));
         }
         Utils.pulsaParaContinuar();
     }
@@ -379,8 +446,8 @@ public class main {
             }
             System.out.println();
             System.out.println("Total sin IVA:\t\t " + cliente.precioCarroSinIVA());
-            System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro());
-            System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA());
+            System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro(16));
+            System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA(16));
         }
 
     }
@@ -403,11 +470,12 @@ public class main {
             if (numProducto < 0 || numProducto >= controlador.getCatalogo().size())
                 System.out.println("El producto que ha seleccionado no existe");
             else {
-                cliente.addProductoCarro(controlador.getCatalogo().get(numProducto - 1));
-                System.out.println("El producto ha sido añadido correctamente");
+                if (controlador.addProductoCarrito(cliente,controlador.getCatalogo().get(numProducto - 1).getId()))
+                    System.out.println("El producto ha sido añadido correctamente");
+                else System.out.println("Ha ocurrido un problema al añadir el producto");
             }
 
-        } while (!preguntaSiNo().equalsIgnoreCase("n"));
+        } while (Utils.preguntaSiNo().equalsIgnoreCase("s"));
         Utils.pulsaParaContinuar();
     }
 
@@ -495,7 +563,7 @@ public class main {
         for (int i = 0; i < resultados.size(); i++) {
             pintaProductoSinRegistro(resultados.get(i));
             if ((i + 1) % 5 == 0) {
-                op = preguntaSiNo();
+                op = Utils.preguntaSiNo();
                 if (op.equalsIgnoreCase("N")) {
                     System.out.println();
                     System.out.print("Regresando");
@@ -573,7 +641,7 @@ public class main {
         if (controlador.registraCliente(email, clave, nombre, localidad, provincia, direccion, telefono)) {
             System.out.println("Se ha registrado correctamente");
             System.out.println("Aún tiene que verificar su correo");
-            if (preguntaSiNo().equalsIgnoreCase("s")) Comunicaciones.verificacionDeCorreo(email);
+            if (Utils.preguntaSiNo().equalsIgnoreCase("s")) Comunicaciones.verificacionDeCorreo(email);
         }
         else System.out.println("Ha ocurrido un problema a la hora de registrarse");
         Utils.limpiaPantalla();
@@ -599,7 +667,7 @@ public class main {
             productosParaPintar.remove(temp);
 
             if ((i + 1) % 5 == 0) {
-                op = preguntaSiNo();
+                op = Utils.preguntaSiNo();
                 if (op.equalsIgnoreCase("N")) {
                     System.out.println("Volviendo al menú de inicio");
                     Utils.cargando();
@@ -624,14 +692,7 @@ public class main {
 
     }
 
-    private static String preguntaSiNo() {
-        String op;
-        do {
-            System.out.println("¿Quieres continuar?(S/N)");
-            op = S.nextLine();
-        } while (!op.equalsIgnoreCase("S") && !op.equalsIgnoreCase("N"));
-        return op;
-    }
+
 
     private static void mensajeInicio() {
         System.out.println("""
