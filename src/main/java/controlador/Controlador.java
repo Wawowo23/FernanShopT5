@@ -26,6 +26,7 @@ public class Controlador {
         registraCliente("a@","1234","amai","el villar",
                 "jaen","calle calle",123456789);
         nuevoTrabajador("b@","0000","nose",98756321);
+        admins.add(new Admin(generaIdAdmin(),"noseTio","4321","c@"));
     }
 
     // Getters y Setters
@@ -403,4 +404,39 @@ public class Controlador {
     }
 
 
+    public int numClientes() {
+        return clientes.size();
+    }
+
+    public int numTrabajadores() {
+        return trabajadores.size();
+    }
+
+    public int numPedidosTotales() {
+        return getTodosPedidos().size();
+    }
+
+    public int numPedidosPendientes() {
+        return getPedidosPendientes().size();
+    }
+
+    private ArrayList<Pedido> getPedidosPendientes() {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : getTodosPedidos()) {
+            if (p.getEstado() < 3) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
+
+    public int numPedidosCompletados() {
+        return getPedidosCompletados().size();
+    }
+
+    private ArrayList<Pedido> getPedidosCompletados() {
+        ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
+        for (Pedido p : getTodosPedidos()) {
+            if (p.getEstado() >= 3) pedidosPendientes.add(p);
+        }
+        return pedidosPendientes;
+    }
 }

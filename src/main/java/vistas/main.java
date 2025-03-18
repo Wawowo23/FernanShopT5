@@ -53,10 +53,10 @@ public class main {
             }
             switch (op) {
                 case 1: // Pintado del catálogo                
-                    // pintaMenuAdminCatalogo(controlador, adminTemp);
+                    pintaMenuAdminCatalogo(controlador, adminTemp);
                     break;
                 case 2: // Edición de un producto
-                    //editaProductoAdmin(controlador, adminTemp);
+                    editaProductoAdmin(controlador, adminTemp);
                     break;
                 case 3: // Resumen de todos los clientes                
                     // pintaResumenClientes(controlador, adminTemp);
@@ -92,7 +92,125 @@ public class main {
         } while (op != 11);
     }
 
-    
+    private static void editaProductoAdmin(Controlador controlador, Admin adminTemp) {
+        System.out.print("Introduzca el producto que está buscando: ");
+        String termino = S.nextLine();
+        ArrayList <Producto> resultados = controlador.buscaProductosByTermino(termino);
+        if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
+        else {
+            pintaProductosParaSeleccion(resultados);
+            int productoSeleccionado = -1;
+            System.out.print("Selecciona el producto que quieres modificar: ");
+            try {
+                productoSeleccionado = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. Formato introducido incorrecto.");
+            }
+            if (productoSeleccionado != -1 &&
+                    (productoSeleccionado > 0 && productoSeleccionado <= resultados.size())) {
+
+                Producto temp = resultados.get(productoSeleccionado - 1);
+                if (menuModificacionProductoParaAdmin(temp))
+                    System.out.println("El producto ha sido modificado correctamente.");
+                else System.out.println("Ha habido un problema al modificar el producto.");
+            }
+
+        }
+    }
+
+    private static boolean menuModificacionProductoParaAdmin(Producto temp) {
+        int op = -1;
+        System.out.println("Este es el producto que has seleccionado");
+        pintaProductoParaSeleccionAdmin(temp);
+        System.out.print("Elija el dato que quiere cambiar: ");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        return modificaProductoAdmin(op,temp);
+    }
+
+    private static boolean modificaProductoAdmin(int op, Producto temp) {
+        switch (op) {
+            case 1:
+                System.out.print("Introduce la nueva marca: ");
+                temp.setMarca(S.nextLine());
+                return true;
+
+            case 2:
+                System.out.print("Introduce el nuevo modelo: ");
+                temp.setModelo(S.nextLine());
+                return true;
+            case 3:
+                float precio = -1;
+                do {
+                    System.out.print("Introduce el nuevo precio: ");
+                    try {
+                        precio = Float.parseFloat(S.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido incorrecto.");
+                    }
+                } while (precio <= 0);
+                temp.setPrecio(precio);
+                return true;
+
+            case 4:
+                int relevancia = -1;
+                do {
+                    System.out.print("Introduce la nueva relevancia: ");
+                    try {
+                        relevancia  = Integer.parseInt(S.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido incorrecto.");
+                    }
+                } while (relevancia <= 0);
+                temp.setRelevancia(relevancia);
+                return true;
+
+            case 5:
+                System.out.print("Introduce la nueva descripción: ");
+                temp.setDescripcion(S.nextLine());
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static void pintaProductoParaSeleccionAdmin(Producto p) {
+        System.out.println("****************************");
+        System.out.println("1.- Marca: " + p.getMarca());
+        System.out.println("2.- Modelo: " + p.getModelo());
+        System.out.println("3.- Precio: " + p.getPrecio());
+        System.out.println("4.- Relevancia: " + p.getRelevancia());
+        System.out.println("5.- Descripción: " + p.getDescripcion());
+        System.out.println("****************************\n");
+    }
+
+    private static void pintaMenuAdminCatalogo(Controlador controlador, Admin adminTemp) {
+        int contador = 1;
+        for (Producto p : controlador.getCatalogo()) {
+            System.out.println();
+            pintaProductoParaAdmin(p);
+            System.out.println();
+            if (contador % 5 == 0)
+                if (Utils.preguntaSiNo().equalsIgnoreCase("n")) break;
+            contador++;
+        }
+    }
+
+    private static void pintaProductoParaAdmin(Producto p) {
+        System.out.println("****************************");
+        System.out.println("Id: " + p.getId());
+        System.out.println("Marca: " + p.getMarca());
+        System.out.println("Modelo: " + p.getModelo());
+        System.out.println("Precio: " + p.getPrecio());
+        System.out.println("Relevancia: " + p.getRelevancia());
+        System.out.println("Descripción: " + p.getDescripcion());
+        System.out.println("****************************");
+    }
+
 
     private static void menuTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         int op = -1;
@@ -115,13 +233,16 @@ public class main {
                     menuVisionadoCatalogo(controlador);
                     break;
                 case 4: // Modificar un producto
-                    modificaProducto(controlador);
+                    modificaProductoTrabajador(controlador);
                     break;
                 case 5: // Ver el historial de pedidos terminados del trabajador
+                    pintaPedidosCompletadosTrabajador(controlador,trabajadorTemp);
                     break;
                 case 6: // Ver el perfil del trabajador
+                    verDatosTrabajador(trabajadorTemp);
                     break;
                 case 7: // Modificar los datos personales del trabajador
+                    modificaDatosPersonalesTrabajador(controlador,trabajadorTemp);
                     break;
                 case 8: // Salir
                     System.out.println("Hasta la próxima");
@@ -137,7 +258,87 @@ public class main {
         } while (op != 8);
     }
 
-    private static void modificaProducto(Controlador controlador) {
+    private static void modificaDatosPersonalesTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+        int op = -1;
+        System.out.println("Estos son tus datos personales");
+        System.out.println("1.- Nombre: " + trabajadorTemp.getNombre());
+        System.out.println("2.- Email: " + trabajadorTemp.getEmail());
+        System.out.println("3.- Móvil: " + trabajadorTemp.getMovil());
+        System.out.println();
+        System.out.print("Introduce la opción a cambiar: ");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto");
+        }
+        if (cambiaDatoTrabajador(op,trabajadorTemp,controlador)) System.out.println("Se han cambiado los datos correctamente");
+        else System.out.println("Ha habido un error al cambiar los datos");
+
+    }
+
+    private static boolean cambiaDatoTrabajador(int op, Trabajador trabajadorTemp, Controlador controlador) {
+        switch (op) {
+            case 1:
+                System.out.print("Introduzca su nuevo nombre: ");
+                trabajadorTemp.setNombre(S.nextLine());
+                return true;
+            case 2:
+                String email = "";
+                boolean emailRepetido = false;
+                do {
+                    emailRepetido = false;
+                    System.out.print("Introduzca su nuevo correo electrónico: ");
+                    email = S.nextLine();
+                    if (!email.contains("@") || controlador.buscaTrabajadorByEmail(email) != null){
+                        emailRepetido = true;
+                        System.out.println("El correo que ha introducido no es válido.");
+                    }
+                } while (emailRepetido);
+                trabajadorTemp.setEmail(email);
+                return true;
+            case 3:
+                int telefono = 0;
+                do {
+                    System.out.println("Introduzca su nuevo teléfono");
+                    try {
+                        telefono = Integer.parseInt(S.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR. El formato introducido es incorrecto.");
+                    }
+                } while (telefono > 999999999 || telefono < 100000000);
+                trabajadorTemp.setMovil(telefono);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static void verDatosTrabajador(Trabajador trabajadorTemp) {
+        System.out.println("Estos son tus datos personales: ");
+        System.out.println("======================================");
+        System.out.println("Nombre: " + trabajadorTemp.getNombre());
+        System.out.println("Email: " + trabajadorTemp.getEmail());
+        System.out.println("Movil: " + trabajadorTemp.getMovil());
+        System.out.println("======================================");
+    }
+
+    private static void pintaPedidosCompletadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+        if (trabajadorTemp.getPedidosCompletos().isEmpty()) System.out.println("No hay pedidos completos.");
+        else {
+            System.out.println("Estos son todos tus pedidos completados " + trabajadorTemp.getNombre());
+            int contador = 1;
+            System.out.println("Estos son tus pedidos asignados (completados y pendientes)");
+            Collections.sort(trabajadorTemp.getPedidosAsignados());
+            for (PedidoClienteDataClass p : controlador.getPedidosCompletadosTrabajador(trabajadorTemp.getId())) {
+                System.out.println();
+                System.out.print(contador + ".- ");
+                pintaPedidoParaTrabajador(p);
+
+            }
+        }
+    }
+
+    private static void modificaProductoTrabajador(Controlador controlador) {
         System.out.print("Introduzca el producto que está buscando: ");
         String termino = S.nextLine();
         ArrayList <Producto> resultados = controlador.buscaProductosByTermino(termino);
@@ -165,13 +366,14 @@ public class main {
 
     private static boolean menuModificacionProducto(Producto temp) {
         int op = -1;
-        System.out.print("""
-                1.- Modelo
-                2.- Marca
-                3.- Descripción
-                4.- Precio
+        System.out.printf("""
+                1.- Modelo: %s
+                2.- Marca: %s
+                3.- Descripción: %s
+                4.- Precio: %f
                 
-                Introduce la opción:\s""");
+                Introduce la opción:\s""",temp.getModelo(),temp.getMarca(),
+                temp.getDescripcion(),temp.getPrecio());
         try {
             op = Integer.parseInt(S.nextLine());
         } catch (NumberFormatException e) {

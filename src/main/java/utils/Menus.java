@@ -80,7 +80,7 @@ public class Menus {
 
     public static void pintaMenuAdmin(Controlador controlador, Admin adminTemp) {
         System.out.printf(""" 
-                Bienvenido Administrador. Tienes %d pedido/s sin asignar. Debe asignarlos a un trabajador 
+                Bienvenido Administrador. Tienes %d pedido/s sin asignar. Debe asignarlos a un trabajador.
                 ========================================================
                                   Estadísticas de la APP            
                 Número de clientes: %d            
@@ -90,7 +90,10 @@ public class Menus {
                 Número de pedidos completados o cancelados: %d            
                 Número de pedidos sin asignar: %d            
                 =========================================================
-                """);
+                """,controlador.numPedidosSinTrabajador(),controlador.numClientes(),controlador.numTrabajadores(),
+                controlador.numPedidosTotales(),controlador.numPedidosPendientes(),controlador.numPedidosCompletados(),
+                controlador.numPedidosSinTrabajador()
+                );
         System.out.print("""
                 ================================
                      Menú de operaciones            
