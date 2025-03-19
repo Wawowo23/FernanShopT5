@@ -59,19 +59,19 @@ public class main {
                     editaProductoAdmin(controlador, adminTemp);
                     break;
                 case 3: // Resumen de todos los clientes                
-                    // pintaResumenClientes(controlador, adminTemp);
+                    pintaResumenClientes(controlador);
                     break;
                 case 4: // Resumen de todos los pedidos
-                    //pintaResumenPedidos(controlador, adminTemp);
+                    pintaResumenPedidos(controlador);
                     break;
                 case 5: // Resumen de todos los trabajadores                
-                    // pintaResumenTrabajadores(controlador, adminTemp);
+                    pintaResumenTrabajadores(controlador);
                     break;
                 case 6: // Estadísticas de la aplicación
-                    //pintaEstadisticasAplicacion(controlador, adminTemp);
+                    pintaEstadisticasAplicacion(controlador);
                     break;
                 case 7: // Cambiado del estado de un pedido
-                    //cambiaEstadoPedido(controlador, adminTemp);
+                    cambiaEstadoPedidoAdmin(controlador);
                     break;
                 case 8: // Dar de alta a un trabajador
                     //darAltaTrabajador(controlador, adminTemp);
@@ -89,7 +89,91 @@ public class main {
                 default:
                     System.out.println("Opción no válida");
             }
+            Utils.pulsaParaContinuar();
+            Utils.limpiaPantalla();
         } while (op != 11);
+    }
+
+    private static void cambiaEstadoPedidoAdmin(Controlador controlador) {
+        if (controlador.getTodosPedidos().isEmpty()) System.out.println("No hay pedidos realizados aún");
+        else {
+            int idPedido = -1;
+            pintaResumenPedidos(controlador);
+            System.out.print("Introduce el id del pedido: ");
+            try {
+                idPedido = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e ) {
+                System.out.println("ERROR. El formato introducido es incorrecto.");
+            }
+            if (idPedido != -1) {
+                Pedido temp = controlador.buscaPedidoById(idPedido);
+                if (modificaPedido(controlador,temp)) System.out.println("Se ha modificado correctamente el pedido");
+                else System.out.println("Ha ocurrido un error al modificar el pedido");
+            }
+        }
+    }
+
+
+    private static void pintaEstadisticasAplicacion(Controlador controlador) {
+        System.out.printf(""" 
+                ========================================================
+                                  Estadísticas de la APP            
+                Número de clientes: %d            
+                Número de trabajadores: %d
+                Número de pedidos: %d            
+                Número de pedidos pendientes: %d
+                Número de pedidos completados o cancelados: %d            
+                Número de pedidos sin asignar: %d            
+                =========================================================
+                """,controlador.numClientes(),controlador.numTrabajadores(),
+                controlador.numPedidosTotales(),controlador.numPedidosPendientes(),controlador.numPedidosCompletados(),
+                controlador.numPedidosSinTrabajador()
+        );
+    }
+
+    private static void pintaResumenTrabajadores(Controlador controlador) {
+        if (controlador.getTrabajadores().isEmpty()) System.out.println("Aún no hay trabajadores dados de alta");
+        else {
+            for (Trabajador t : controlador.getTrabajadores()) {
+                pintaResumenTrabajadorAdmin(t);
+            }
+            System.out.println();
+        }
+    }
+
+    private static void pintaResumenTrabajadorAdmin(Trabajador t) {
+        System.out.println("Id: " + t.getId() + ".- " + t.getNombre() + " - " + t.getMovil() + " - " + t.getEmail());
+    }
+
+    private static void pintaResumenPedidos(Controlador controlador) {
+        if (controlador.numPedidosTotales() == 0) System.out.println("Aún no hay ningún pedido realizado");
+        else {
+            for (Pedido p : controlador.getTodosPedidos()) {
+                pintaResumenPedidoParaAdmin(p);
+            }
+            System.out.println();
+        }
+    }
+
+    private static void pintaResumenPedidoParaAdmin(Pedido p) {
+        System.out.println("Id: " + p.getId() + ".- " + Utils.getEstadoPedido(p.getEstado()) + ". (" + p.getFechaPedido() +
+                ") -> (" + p.getFechaEntregaEstimada() + "). " + p.getComentario());
+    }
+
+    private static void pintaResumenClientes(Controlador controlador) {
+        if (controlador.getClientes().isEmpty()) System.out.println("No hay clientes registrados aún.");
+        else {
+            System.out.println("Estos son todos los clientes registrados: ");
+            for (Cliente c : controlador.getClientes()) {
+                pintaResumenClienteParaAdmin(c);
+            }
+            System.out.println();
+        }
+    }
+
+    private static void pintaResumenClienteParaAdmin(Cliente c) {
+        System.out.println("Id: " + c.getId() + " .- " + c.getNombre() + " - " + c.getEmail() + " - " + c.getDireccion());
+
     }
 
     private static void editaProductoAdmin(Controlador controlador, Admin adminTemp) {
@@ -227,7 +311,7 @@ public class main {
                     pintaPedidosAsignadosTrabajador(controlador,trabajadorTemp);
                     break;
                 case 2: // Modificar el estado de un pedido
-                    modificaEstadoPedido(controlador,trabajadorTemp);
+                    modificaEstadoPedidoTrabajador(controlador,trabajadorTemp);
                     break;
                 case 3: // Consultar el catálogo de productos
                     menuVisionadoCatalogo(controlador);
@@ -418,7 +502,7 @@ public class main {
         System.out.println();
     }
 
-    private static void modificaEstadoPedido(Controlador controlador, Trabajador trabajadorTemp) {
+    private static void modificaEstadoPedidoTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         if (trabajadorTemp.getPedidosAsignados().isEmpty()) System.out.println("No tienes pedidos asignados");
         else {
             int numPedido = -1;
@@ -431,14 +515,14 @@ public class main {
             }
             if (numPedido != -1) {
                 Pedido temp = trabajadorTemp.getPedidosAsignados().get(numPedido - 1);
-                if (modificaPedido(temp)) System.out.println("Se ha modificado correctamente el pedido");
+                if (modificaPedido(controlador,temp)) System.out.println("Se ha modificado correctamente el pedido");
                 else System.out.println("Ha ocurrido un error al modificar el pedido");
             }
         }
 
     }
 
-    private static boolean modificaPedido(Pedido temp) {
+    private static boolean modificaPedido(Controlador controlador, Pedido temp) {
         int op = -1;
         System.out.print("""
                 =============================================
@@ -468,7 +552,7 @@ public class main {
                 } catch (NumberFormatException e) {
                     System.out.println("ERROR. El formato introducido es incorrecto.");
                 }
-                return temp.cambiaEstado(nuevoEstado);
+                return controlador.cambiaEstadoPedido(temp.getId(),nuevoEstado);
             case 2:
                 System.out.print("Introduzca el comentario que quiere añadir: ");
                 temp.setComentario(S.nextLine());
@@ -765,9 +849,11 @@ public class main {
             } catch (NumberFormatException e) {
                 System.out.println("ERROR. El formato introducido es incorrecto");
             }
+            if (numPedido > 0 && numPedido <= cliente.getPedidosPendientesEntrega().size()) {
             if (cliente.cancelaPedido(cliente.getPedidosPendientesEntrega().get(numPedido - 1).getId()))
                 System.out.println("Pedido cancelado correctamente");
             else System.out.println("Ha ocurrido un error al cancelar el pedido");
+            } else System.out.println("Ese pedido no existe");
         }
         Utils.pulsaParaContinuar();
     }
@@ -861,28 +947,35 @@ public class main {
         do {
             Utils.limpiaPantalla();
             int numProducto = -1;
-            pintaCatalogoParaSeleccion(controlador);
-            System.out.print("Introduce el número del producto deseado: ");
-            try {
-                numProducto = Integer.parseInt(S.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("ERROR. El formato introducido es incorrecto");
-            }
-            if (numProducto < 0 || numProducto >= controlador.getCatalogo().size())
-                System.out.println("El producto que ha seleccionado no existe");
+            System.out.print("Introduzca el término que está buscando: ");
+            String termino = S.nextLine();
+            ArrayList<Producto> resultados = controlador.buscaProductosByTermino(termino);
+            if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
             else {
-                if (controlador.addProductoCarrito(cliente,controlador.getCatalogo().get(numProducto - 1).getId()))
-                    System.out.println("El producto ha sido añadido correctamente");
-                else System.out.println("Ha ocurrido un problema al añadir el producto");
+                pintaCatalogoParaSeleccion(resultados);
+                System.out.print("Introduce el número del producto deseado: ");
+                try {
+                    numProducto = Integer.parseInt(S.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR. El formato introducido es incorrecto");
+                }
+                if (numProducto < 0 || numProducto >= resultados.size())
+                    System.out.println("El producto que ha seleccionado no existe");
+                else {
+                    if (controlador.addProductoCarrito(cliente, resultados.get(numProducto - 1).getId()))
+                        System.out.println("El producto ha sido añadido correctamente");
+                    else System.out.println("Ha ocurrido un problema al añadir el producto");
+                }
+
             }
 
-        } while (Utils.preguntaSiNo().equalsIgnoreCase("s"));
+        } while (Utils.preguntaSiNo().equalsIgnoreCase("s")) ;
         Utils.pulsaParaContinuar();
     }
 
-    private static void pintaCatalogoParaSeleccion(Controlador controlador) {
+    private static void pintaCatalogoParaSeleccion(ArrayList<Producto> resultados) {
         int contador = 1;
-        for (Producto p : controlador.getCatalogo()) {
+        for (Producto p : resultados) {
             pintaProductoParaSeleccion(contador, p);
             contador++;
         }

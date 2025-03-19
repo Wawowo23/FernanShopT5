@@ -116,7 +116,6 @@ public class Controlador {
     // TODO intentar que sea en un mismo bucle
     public Trabajador buscaTrabajadorCandidatoParaAsignar() {
         int numPedidosMenor = Integer.MAX_VALUE;
-        int contadorTrabajadoresIguales = 0;
         Trabajador trabajadorElegido = null;
         for (Trabajador t : trabajadores) {
             if (t.getPedidosPendientes().size() < numPedidosMenor) {
@@ -124,12 +123,6 @@ public class Controlador {
                 trabajadorElegido  = t;
             }
         }
-        /*for (Trabajador t : trabajadores) {
-            if (t.getPedidosPendientes().size() == numPedidosMenor) {
-                trabajadorElegido = t;
-                contadorTrabajadoresIguales++;
-            }
-        }*/
         if (trabajadores.size() > 1) if (hayEmpateTrabajadoresCandidatos(trabajadorElegido)) return null;
         return trabajadorElegido;
     }
@@ -286,7 +279,7 @@ public class Controlador {
         return id;
     }
 
-    private Pedido buscaPedidoById(int id) {
+    public Pedido buscaPedidoById(int id) {
         for (Pedido p : getTodosPedidos()) {
             if (p.getId() == id) return p;
         }
