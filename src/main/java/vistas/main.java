@@ -541,8 +541,10 @@ public class main {
         } while (op != 8);
     }
 
+    // Función que permite al trabajador cambiar sus datos personales de su perfil
     private static void modificaDatosPersonalesTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         int op = -1;
+        // Mostramos los datos del trabajador
         System.out.println("Estos son tus datos personales");
         System.out.println("1.- Nombre: " + trabajadorTemp.getNombre());
         System.out.println("2.- Email: " + trabajadorTemp.getEmail());
@@ -559,24 +561,22 @@ public class main {
 
     }
 
+    // Función que gestiona los cambios en los datos personales del trabajador
     private static boolean cambiaDatoTrabajador(int op, Trabajador trabajadorTemp, Controlador controlador) {
-        switch (op) {
+        switch (op) { // Comprobamos cual es el dato que quiere cambiar el trabajador
             case 1:
                 System.out.print("Introduzca su nuevo nombre: ");
                 trabajadorTemp.setNombre(S.nextLine());
                 return true;
             case 2:
                 String email = "";
-                boolean emailRepetido = false;
-                do {
-                    emailRepetido = false;
-                    System.out.print("Introduzca su nuevo correo electrónico: ");
-                    email = S.nextLine();
-                    if (!email.contains("@") || controlador.emailRepetido(email)){
-                        emailRepetido = true;
-                        System.out.println("El correo que ha introducido no es válido.");
-                    }
-                } while (emailRepetido);
+                // Comprobamos que el trabajador introduzca un correo que no exista
+                System.out.print("Introduzca su nuevo correo electrónico: ");
+                email = S.nextLine();
+                if (!email.contains("@") || controlador.emailRepetido(email)) {
+                    System.out.println("El correo que ha introducido no es válido.");
+                    return false;
+                }
                 trabajadorTemp.setEmail(email);
                 return true;
             case 3:
@@ -596,6 +596,7 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un trabajador
     private static void verDatosTrabajador(Trabajador trabajadorTemp) {
         System.out.println("Estos son tus datos personales: ");
         System.out.println("======================================");
@@ -605,7 +606,9 @@ public class main {
         System.out.println("======================================");
     }
 
+    // Función que pinta todos los pedidos asignados a un trabajador que están asignados
     private static void pintaPedidosCompletadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
+        // Comprobamos si hay pedidos completados
         if (trabajadorTemp.getPedidosCompletos().isEmpty()) System.out.println("No hay pedidos completos.");
         else {
             System.out.println("Estos son todos tus pedidos completados " + trabajadorTemp.getNombre());
@@ -621,10 +624,12 @@ public class main {
         }
     }
 
+    // Función que permite a un trabajador modificar los atributos de un producto
     private static void modificaProductoTrabajador(Controlador controlador) {
         System.out.print("Introduzca el producto que está buscando: ");
         String termino = S.nextLine();
         ArrayList <Producto> resultados = controlador.buscaProductosByTermino(termino);
+        // Comprobamos si hay productos que contengan en término que ha introducido el trabajador
         if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
         else {
             pintaProductosParaSeleccion(resultados);
@@ -635,6 +640,7 @@ public class main {
             } catch (NumberFormatException e) {
                 System.out.println("ERROR. Formato introducido incorrecto.");
             }
+            // Comprobamos que el producto elegido por el trabajador exista
             if (productoSeleccionado != -1 &&
                     (productoSeleccionado > 0 && productoSeleccionado <= resultados.size())) {
 
@@ -647,6 +653,7 @@ public class main {
         }
     }
 
+    // Función que gestiona todos los cambios que un trabajador le puede hacer a un trabajo
     private static boolean menuModificacionProducto(Producto temp) {
         int op = -1;
         System.out.printf("""
@@ -692,6 +699,7 @@ public class main {
         }
     }
 
+    // Función que pinta distintos productos para un menú de selección
     private static void pintaProductosParaSeleccion(ArrayList<Producto> resultados) {
         int contador = 1;
         for (Producto p : resultados) {
@@ -701,6 +709,7 @@ public class main {
         System.out.println();
     }
 
+    // Función que gestiona la modificación del estado de un pedido para un trabajador
     private static void modificaEstadoPedidoTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         if (trabajadorTemp.getPedidosAsignados().isEmpty()) System.out.println("No tienes pedidos asignados");
         else {
@@ -721,6 +730,7 @@ public class main {
 
     }
 
+    // Función que gestiona la modificación de un atributo de un pedido.
     private static boolean modificaPedido(Controlador controlador, Pedido temp) {
         int op = -1;
         System.out.print("""
