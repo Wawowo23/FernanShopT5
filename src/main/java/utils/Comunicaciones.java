@@ -190,6 +190,7 @@ public class Comunicaciones {
     }
 
 
+
     public static boolean enviaMensajeTelegram(Pedido pedido, String idTrabajador) {
         String mensaje = "Se le ha sido asignado el pedido " + pedido.getId() + "\n";
         mensaje += "Detalles del pedido :\n";

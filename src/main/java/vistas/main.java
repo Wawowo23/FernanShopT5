@@ -38,10 +38,7 @@ public class main {
         }
 
         if (user instanceof Cliente clienteTemp) {
-            if (!clienteTemp.isActivado())
-                if (verificacionDeCorreoCliente(clienteTemp.getEmail()))
-                    clienteTemp.setActivado(true);
-            else return;
+
             menuCliente(controlador, clienteTemp);
         }
     }
@@ -836,8 +833,13 @@ public class main {
 
     // Función que gestiona todas las funciones de los clientes
     private static void menuCliente(Controlador controlador, Cliente clienteTemp) {
+
         int op = -1;
         do {
+            if (!clienteTemp.isActivado())
+                if (verificacionDeCorreoCliente(clienteTemp.getEmail()))
+                    clienteTemp.setActivado(true);
+                else return;
             Menus.pintaMenuPrincipalCliente(clienteTemp);
             try {
                 op = Integer.parseInt(S.nextLine());
