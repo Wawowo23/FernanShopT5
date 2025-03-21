@@ -27,24 +27,29 @@ public class main {
 
     }
 
+    // Función que gestiona la clase de usuario que ha iniciado sesión y lo lleva su respectivo menú
     private static void menuUsuario(Controlador controlador, Object user) {
+        if (user instanceof Admin) {
+            menuAdmin(controlador);
+        }
+
+        if (user instanceof Trabajador trabajadorTemp) {
+            menuTrabajador(controlador, trabajadorTemp);
+        }
+
         if (user instanceof Cliente clienteTemp) {
             if (!clienteTemp.isActivado()) Comunicaciones.verificacionDeCorreo(clienteTemp.getEmail());
             menuCliente(controlador, clienteTemp);
         }
-        if (user instanceof Trabajador trabajadorTemp) {
-            menuTrabajador(controlador, trabajadorTemp);
-        }
-        if (user instanceof Admin adminTemp) {
-            menuAdmin(controlador, adminTemp);
-        }
+
     }
 
-    private static void menuAdmin(Controlador controlador, Admin adminTemp) {
+    // Función que gestiona todas las funciones de un admin
+    private static void menuAdmin(Controlador controlador) {
         int op = -1;
         
         do {
-            Menus.pintaMenuAdmin(controlador,adminTemp);
+            Menus.pintaMenuAdmin(controlador);
             
             try {
                 op = Integer.parseInt(S.nextLine());
@@ -53,10 +58,10 @@ public class main {
             }
             switch (op) {
                 case 1: // Pintado del catálogo                
-                    pintaMenuAdminCatalogo(controlador, adminTemp);
+                    pintaMenuAdminCatalogo(controlador);
                     break;
                 case 2: // Edición de un producto
-                    editaProductoAdmin(controlador, adminTemp);
+                    editaProductoAdmin(controlador);
                     break;
                 case 3: // Resumen de todos los clientes                
                     pintaResumenClientes(controlador);
@@ -74,13 +79,13 @@ public class main {
                     cambiaEstadoPedidoAdmin(controlador);
                     break;
                 case 8: // Dar de alta a un trabajador
-                    //darAltaTrabajador(controlador, adminTemp);
+                    darAltaTrabajador(controlador);
                     break;
                 case 9: // Dar de baja a un trabajador                
-                    // darBajaTrabajador(controlador, adminTemp);
+                    darBajaTrabajador(controlador);
                     break;
                 case 10: // Asignación de un pedido a un trabajador
-                    //asignaPedidosPorAdmin(controlador, adminTemp);
+                    asignaPedidosPorAdmin(controlador);
                     break;
                 case 11: // Salida                
                     System.out.println("Saliendo");
@@ -94,6 +99,181 @@ public class main {
         } while (op != 11);
     }
 
+    // Función que gestiona la asignación manual de pedidos a trabajadores
+    private static void asignaPedidosPorAdmin(Controlador controlador) {
+        ArrayList<Trabajador> trabajadoresDeAlta = controlador.getTrabajadoresDeAlta();
+        ArrayList<Pedido> pedidosNoAsignados = controlador.pedidosSinTrabajador();
+        if (trabajadoresDeAlta.isEmpty()) System.out.println("Aún no hay trabajadores");
+        if (pedidosNoAsignados.isEmpty()) System.out.println("Aún no hay pedidos");
+        if (!pedidosNoAsignados.isEmpty() && !trabajadoresDeAlta.isEmpty()){
+            Pedido pedidoElegido = seleccionaPedidoParaAsignar(pedidosNoAsignados);
+            if (pedidoElegido == null) System.out.println("El pedido elegido no existe");
+            else {
+                Trabajador trabajadorElegido = seleccionaTrabajadorParaAsignar(trabajadoresDeAlta);
+                if (trabajadorElegido == null) System.out.println("El trabajador elegido no existe");
+                else {
+                    if (controlador.asignaPedido(pedidoElegido.getId(),trabajadorElegido.getId()))
+                        System.out.println("El pedido ha sido asignado correctamente");
+                    else System.out.println("Ha ocurrido un problema al asignar el pedido");
+                }
+            }
+
+
+        }
+    }
+
+    // Función por la cual se selecciona un pedido entre una lista de estos
+    private static Pedido seleccionaPedidoParaAsignar(ArrayList<Pedido> pedidosNoAsignados) {
+        int pedidoElegido = -1;
+        pintaPedidosParaAsignacion(pedidosNoAsignados);
+        System.out.print("Elige el pedido: ");
+        try {
+            pedidoElegido = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        // Comprobamos que el pedido elegido realmente exista
+        if (pedidoElegido <= 0 || pedidoElegido > pedidosNoAsignados.size()) return null;
+        return pedidosNoAsignados.get(pedidoElegido - 1);
+    }
+
+    // Función que pinta los pedidos para que el admin los asigne
+    private static void pintaPedidosParaAsignacion(ArrayList<Pedido> pedidosNoAsignados) {
+        int contador = 1;
+        for (Pedido p : pedidosNoAsignados) {
+            System.out.println(contador + ".- Id: " + p.getId() + ". " + p.getEstado() + " - (" +
+                    p.getFechaPedido() + ") -> (" + p.getFechaEntregaEstimada() + ").");
+            contador++;
+        }
+    }
+
+    // Función que sirve para que el admin seleccione un trabajador para asignarle un pedido
+    private static Trabajador seleccionaTrabajadorParaAsignar(ArrayList<Trabajador> trabajadoresDeAlta) {
+        int trabajadorElegido = -1;
+        pintaTrabajadoresParaAsignacion(trabajadoresDeAlta);
+        System.out.print("Seleccione un trabajador: ");
+        try {
+            trabajadorElegido = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        // Comprobamos si el trabajador elegido realmente existe
+        if (trabajadorElegido <= 0 || trabajadorElegido > trabajadoresDeAlta.size()) return null;
+        return trabajadoresDeAlta.get(trabajadorElegido - 1);
+    }
+
+    // Función que pinta los trabajadores disponibles para asignarle un pedido
+    private static void pintaTrabajadoresParaAsignacion(ArrayList<Trabajador> trabajadores) {
+        int contador = 1;
+        for (Trabajador t : trabajadores) {
+            System.out.println(contador + ".- Id: " + t.getId() + ". " + t.getNombre() + " - " + t.getMovil() +
+                    ". Pedidos asignados pendientes: " + t.numPedidosPendientes());
+            contador++;
+        }
+    }
+
+    // Función que gestiona el apartado de dar de baja un trabajador
+    private static void darBajaTrabajador(Controlador controlador) {
+        ArrayList<Trabajador> trabajadoresDeAlta = controlador.getTrabajadoresDeAlta();
+        if (trabajadoresDeAlta.isEmpty()) System.out.println("No hay trabajadores para dar de baja.");
+        else {
+            int trabajadorElegido = -1;
+            pintaResumenTrabajadoresParaSeleccion(trabajadoresDeAlta);
+            System.out.print("Elige al trabajador: ");
+            try {
+                trabajadorElegido = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto.");
+            }
+            // Comprobamos que el trabajador elegido realmente exista
+            if (trabajadorElegido != -1 && (trabajadorElegido > 0 && trabajadorElegido <= trabajadoresDeAlta.size())) {
+                if (controlador.darDeBajaTrabajador(trabajadoresDeAlta.get(trabajadorElegido - 1).getId()))
+                    System.out.println("El trabajador ha sido dado de baja correctamente");
+                else System.out.println("Ha ocurrido un problema al dar de baja al trabajador");
+            } else System.out.println("El trabajador seleccionado no existe");
+        }
+    }
+
+    // Función que pinta un resumen de los trabajadores a modo de menú de selección
+    private static void pintaResumenTrabajadoresParaSeleccion(ArrayList<Trabajador> trabajadores) {
+        int contador = 1;
+        for (Trabajador t : trabajadores) {
+            System.out.println(contador + ".- " + "Id: " + t.getId() + " - " + t.getNombre() + " - " + t.getMovil() + " - " + t.getEmail());
+            contador++;
+        }
+        System.out.println();
+    }
+
+    // Función que gestiona el apartado de dar de alta a un trabajador
+    private static void darAltaTrabajador(Controlador controlador) {
+        int op = -1;
+            System.out.print("""
+                *********************************************
+                  1.- Dar de alta un trabajador ya registrado
+                  2.- Registrar un nuevo trabajador
+                *********************************************
+                Introduzca una opción:\s""");
+        try {
+            op = Integer.parseInt(S.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR. El formato introducido es incorrecto.");
+        }
+        if (op < 1 || op > 2) System.out.println("Opción introducida incorrecta");
+        if (op == 1) {
+            int trabajadorElegido = -1;
+            ArrayList<Trabajador> trabajadoresDeBaja = controlador.getTrabajadoresDeBaja();
+            if (trabajadoresDeBaja.isEmpty()) System.out.println("No hay trabajadores para dar de alta en este momento");
+            pintaResumenTrabajadoresParaSeleccion(trabajadoresDeBaja);
+            System.out.print("Elige al trabajador: ");
+            try {
+                trabajadorElegido = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. El formato introducido es incorrecto.");
+            }
+            if (trabajadorElegido != -1 && (trabajadorElegido > 0 && trabajadorElegido <= trabajadoresDeBaja.size())) {
+                if (controlador.darDeAltaTrabajador(trabajadoresDeBaja.get(trabajadorElegido - 1).getId()))
+                    System.out.println("El trabajador ha sido dado de alta correctamente");
+                else System.out.println("Ha ocurrido un problema al dar de alta al trabajador");
+            } else System.out.println("El trabajador seleccionado no existe");
+        }
+        if (op == 2) {
+            registraNuevoTrabajador(controlador);
+        }
+    }
+
+    // Función que reúne todos los datos requeridos para registrar un trabajador
+    private static void registraNuevoTrabajador(Controlador controlador) {
+        int telefono = -1;
+        String email = "";
+        boolean emailRepetido = false;
+        System.out.print("Introduzca el nombre del trabajador: ");
+        String nombre = S.nextLine();
+        System.out.print("Introduzca el clave del trabajador: ");
+        String clave = S.nextLine();
+        do {
+            System.out.println("Introduzca el teléfono del trabajador");
+            try {
+                telefono = Integer.parseInt(S.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR. Formato introducido incorrecto.");
+            }
+        } while (telefono > 999999999 || telefono < 100000000);
+        do { // Comprobamos que el correo introducido no esté ya registrado
+            emailRepetido = false;
+            System.out.println("Introduzca el email del trabajador");
+            email = S.nextLine();
+            if (!email.contains("@")) System.out.println("El email que ha introducido no es válido");
+            if (controlador.emailRepetido(email)) {
+                System.out.println("Ese email ya ha sido registrado");
+                emailRepetido = true;
+            }
+        } while (emailRepetido || !email.contains("@"));
+        if (controlador.nuevoTrabajador(email, clave, nombre, telefono))
+            System.out.println("El trabajador ha sido registrado correctamente");
+        else System.out.println("Ha ocurrido un error al registrar al trabajador");
+    }
+
+    // Función que permite al admin cambiar el estado de un pedido
     private static void cambiaEstadoPedidoAdmin(Controlador controlador) {
         if (controlador.getTodosPedidos().isEmpty()) System.out.println("No hay pedidos realizados aún");
         else {
@@ -114,16 +294,17 @@ public class main {
     }
 
 
+    // Función que pinta las estadísticas de la aplicación
     private static void pintaEstadisticasAplicacion(Controlador controlador) {
         System.out.printf(""" 
                 ========================================================
                                   Estadísticas de la APP            
-                Número de clientes: %d            
-                Número de trabajadores: %d
-                Número de pedidos: %d            
-                Número de pedidos pendientes: %d
-                Número de pedidos completados o cancelados: %d            
-                Número de pedidos sin asignar: %d            
+                 Número de clientes: %d            
+                 Número de trabajadores: %d
+                 Número de pedidos: %d            
+                 Número de pedidos pendientes: %d
+                 Número de pedidos completados o cancelados: %d            
+                 Número de pedidos sin asignar: %d            
                 =========================================================
                 """,controlador.numClientes(),controlador.numTrabajadores(),
                 controlador.numPedidosTotales(),controlador.numPedidosPendientes(),controlador.numPedidosCompletados(),
@@ -131,23 +312,29 @@ public class main {
         );
     }
 
+    // Función que pinta un resumen de todos los trabajadores para el admin
     private static void pintaResumenTrabajadores(Controlador controlador) {
         if (controlador.getTrabajadores().isEmpty()) System.out.println("Aún no hay trabajadores dados de alta");
         else {
             for (Trabajador t : controlador.getTrabajadores()) {
+                System.out.println("Estos son todos los trabajadores registrados: ");
                 pintaResumenTrabajadorAdmin(t);
             }
             System.out.println();
         }
     }
 
+    // Función que pinta los datos de un trabajador en una linea para el admin
     private static void pintaResumenTrabajadorAdmin(Trabajador t) {
-        System.out.println("Id: " + t.getId() + ".- " + t.getNombre() + " - " + t.getMovil() + " - " + t.getEmail());
+        System.out.println("Id: " + t.getId() + ".- " + t.getNombre() + " - " + t.getMovil() + " - " + t.getEmail() + ". " +
+                ((t.isAlta()) ? "Alta.":"Baja." + " Pedidos asignados pendientes: " + t.numPedidosPendientes()));
     }
 
+    // Función que pinta un resumen de todos los pedidos para el admin
     private static void pintaResumenPedidos(Controlador controlador) {
         if (controlador.numPedidosTotales() == 0) System.out.println("Aún no hay ningún pedido realizado");
         else {
+            System.out.println("Estos son todos los pedidos realizados: ");
             for (Pedido p : controlador.getTodosPedidos()) {
                 pintaResumenPedidoParaAdmin(p);
             }
@@ -155,11 +342,13 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un pedido en una linea para el admin
     private static void pintaResumenPedidoParaAdmin(Pedido p) {
         System.out.println("Id: " + p.getId() + ".- " + Utils.getEstadoPedido(p.getEstado()) + ". (" + p.getFechaPedido() +
                 ") -> (" + p.getFechaEntregaEstimada() + "). " + p.getComentario());
     }
 
+    // Función que pinta un resumen de todos los clientes para el admin
     private static void pintaResumenClientes(Controlador controlador) {
         if (controlador.getClientes().isEmpty()) System.out.println("No hay clientes registrados aún.");
         else {
@@ -171,14 +360,17 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un cliente en una linea para el admin
     private static void pintaResumenClienteParaAdmin(Cliente c) {
         System.out.println("Id: " + c.getId() + " .- " + c.getNombre() + " - " + c.getEmail() + " - " + c.getDireccion());
 
     }
 
-    private static void editaProductoAdmin(Controlador controlador, Admin adminTemp) {
+    // Función que permite a un admin editar los distintos datos de un producto
+    private static void editaProductoAdmin(Controlador controlador) {
         System.out.print("Introduzca el producto que está buscando: ");
         String termino = S.nextLine();
+        // Pintamos todos los productos que contengan el término introducido por el admin
         ArrayList <Producto> resultados = controlador.buscaProductosByTermino(termino);
         if (resultados.isEmpty()) System.out.println("No hemos encontrados resultados para su búsqueda");
         else {
@@ -190,9 +382,9 @@ public class main {
             } catch (NumberFormatException e) {
                 System.out.println("ERROR. Formato introducido incorrecto.");
             }
+            // Comprobamos que el producto seleccionado exista
             if (productoSeleccionado != -1 &&
                     (productoSeleccionado > 0 && productoSeleccionado <= resultados.size())) {
-
                 Producto temp = resultados.get(productoSeleccionado - 1);
                 if (menuModificacionProductoParaAdmin(temp))
                     System.out.println("El producto ha sido modificado correctamente.");
@@ -202,6 +394,7 @@ public class main {
         }
     }
 
+    // Función que le muestra al admin los datos del producto que haya seleccionado y le permite cambiarlos
     private static boolean menuModificacionProductoParaAdmin(Producto temp) {
         int op = -1;
         System.out.println("Este es el producto que has seleccionado");
@@ -215,6 +408,7 @@ public class main {
         return modificaProductoAdmin(op,temp);
     }
 
+    // Función que gestiona los cambios de los distintos atributos de un producto
     private static boolean modificaProductoAdmin(int op, Producto temp) {
         switch (op) {
             case 1:
@@ -262,6 +456,7 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un producto para que un admin los seleccione
     private static void pintaProductoParaSeleccionAdmin(Producto p) {
         System.out.println("****************************");
         System.out.println("1.- Marca: " + p.getMarca());
@@ -272,7 +467,9 @@ public class main {
         System.out.println("****************************\n");
     }
 
-    private static void pintaMenuAdminCatalogo(Controlador controlador, Admin adminTemp) {
+
+    // Función que pinta el catálogo completo para el admin
+    private static void pintaMenuAdminCatalogo(Controlador controlador) {
         int contador = 1;
         for (Producto p : controlador.getCatalogo()) {
             System.out.println();
@@ -284,6 +481,7 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un producto para un admin
     private static void pintaProductoParaAdmin(Producto p) {
         System.out.println("****************************");
         System.out.println("Id: " + p.getId());
@@ -296,6 +494,7 @@ public class main {
     }
 
 
+    // Función que gestiona todas las funciones del trabajador
     private static void menuTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         int op = -1;
         do {
@@ -373,7 +572,7 @@ public class main {
                     emailRepetido = false;
                     System.out.print("Introduzca su nuevo correo electrónico: ");
                     email = S.nextLine();
-                    if (!email.contains("@") || controlador.buscaTrabajadorByEmail(email) != null){
+                    if (!email.contains("@") || controlador.emailRepetido(email)){
                         emailRepetido = true;
                         System.out.println("El correo que ha introducido no es válido.");
                     }
@@ -695,7 +894,7 @@ public class main {
                     System.out.print("Introduzca su nuevo email: ");
                     email = S.nextLine();
                     if (!email.contains("@")) System.out.println("El correo introducido no es válido");
-                    if (controlador.buscaClienteByCorreo(email) != null) {
+                    if (controlador.emailRepetido(email)) {
                         System.out.println("El correo introducido ya existe");
                         correoExistente = true;
                     }
@@ -1097,6 +1296,9 @@ public class main {
                 break;
             case 3:
                 return inicioSesion(controlador);
+            default:
+                System.out.println("Opción introducida incorrecta");
+                break;
 
         }
         return null;
@@ -1112,7 +1314,7 @@ public class main {
             System.out.print("Introduzca su email: ");
             email = S.nextLine();
             if (!email.contains("@")) System.out.println("El correo introducido no es válido");
-            if (controlador.buscaClienteByCorreo(email) != null) {
+            if (controlador.emailRepetido(email)) {
                 System.out.println("El correo introducido ya existe");
                 correoExistente = true;
             }
@@ -1151,7 +1353,9 @@ public class main {
         System.out.print("Introduzca su contraseña: ");
         String clave = S.nextLine();
         Utils.limpiaPantalla();
-        return controlador.login(email, clave);
+        Object user = controlador.login(email, clave);
+        if (user == null) System.out.println("Contraseña y/o email introducidos incorrectos");
+        return user;
     }
 
     private static void pintaCatalogo(Controlador controlador) {

@@ -10,6 +10,7 @@ public class Trabajador {
     private String email;
     private int movil;
     private ArrayList<Pedido> pedidosAsignados;
+    private boolean alta;
 
     // Constructor
 
@@ -20,6 +21,7 @@ public class Trabajador {
         this.email = email;
         this.movil = movil;
         pedidosAsignados = new ArrayList<>();
+        alta = true;
     }
 
     // Constructor copia
@@ -31,6 +33,7 @@ public class Trabajador {
         email = trabajador.email;
         movil = trabajador.movil;
         pedidosAsignados = new ArrayList<>(trabajador.pedidosAsignados);
+        alta = trabajador.alta;
     }
 
     // Getters y Setters
@@ -81,6 +84,14 @@ public class Trabajador {
 
     public void setPedidosAsignados(ArrayList<Pedido> pedidosAsignados) {
         this.pedidosAsignados = pedidosAsignados;
+    }
+
+    public boolean isAlta() {
+        return alta;
+    }
+
+    public void setAlta(boolean alta) {
+        this.alta = alta;
     }
 
     // Otros metodos

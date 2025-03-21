@@ -204,6 +204,7 @@ public class Cliente {
         return false;
     }
 
+    // Metodo que devuelve los pedidos que aún no han sido entregados de un cliente, comprobando sus estados
     public ArrayList<Pedido> getPedidosPendientesEntrega () {
         ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
         for (Pedido p : pedidos) {
@@ -212,6 +213,7 @@ public class Cliente {
         return pedidosPendientes;
     }
 
+    // Metodo que devuelve los pedidos de un cliente que han sido cancelados, comprobando sus estados
     public ArrayList<Pedido> getPedidosCancelados () {
         ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
         for (Pedido p : pedidos) {
@@ -220,6 +222,7 @@ public class Cliente {
         return pedidosPendientes;
     }
 
+    // Metodo que devuelve los pedidos de un cliente que han sido entregados, comprobando sus estados
     public ArrayList<Pedido> getPedidosEntregados () {
         ArrayList<Pedido> pedidosPendientes = new ArrayList<>();
         for (Pedido p : pedidos) {
@@ -246,7 +249,7 @@ public class Cliente {
 
 
 
-    // TODO no sé si estoy haciendo demasiados metodos nuevos
+    // Metodo que cancela el pedido de un cliente
     public boolean cancelaPedido(int id) {
         for (Pedido p : pedidos) {
             if (p.getId() == id) {

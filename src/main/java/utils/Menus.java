@@ -78,7 +78,7 @@ public class Menus {
                         : "pedidos pendientes"));
     }
 
-    public static void pintaMenuAdmin(Controlador controlador, Admin adminTemp) {
+    public static void pintaMenuAdmin(Controlador controlador) {
         System.out.printf(""" 
                 Bienvenido Administrador. Tienes %d pedido/s sin asignar. Debe asignarlos a un trabajador.
                 ========================================================

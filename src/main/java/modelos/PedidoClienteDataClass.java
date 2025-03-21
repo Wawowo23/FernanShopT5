@@ -3,7 +3,9 @@ package modelos;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+// Clase que sirve para poder unir los datos de un pedido y su cliente para que sea más fácil pintar sus datos
 public class PedidoClienteDataClass {
+    // Atributos
     private int idPedido;
     private int idCliente;
     private String nombreCliente;
