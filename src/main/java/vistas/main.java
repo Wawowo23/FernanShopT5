@@ -38,10 +38,12 @@ public class main {
         }
 
         if (user instanceof Cliente clienteTemp) {
-            if (!clienteTemp.isActivado()) Comunicaciones.verificacionDeCorreo(clienteTemp.getEmail());
+            if (!clienteTemp.isActivado())
+                if (verificacionDeCorreoCliente(clienteTemp.getEmail()))
+                    clienteTemp.setActivado(true);
+            else return;
             menuCliente(controlador, clienteTemp);
         }
-
     }
 
     // Función que gestiona todas las funciones de un admin
@@ -106,6 +108,7 @@ public class main {
         if (trabajadoresDeAlta.isEmpty()) System.out.println("Aún no hay trabajadores");
         if (pedidosNoAsignados.isEmpty()) System.out.println("Aún no hay pedidos");
         if (!pedidosNoAsignados.isEmpty() && !trabajadoresDeAlta.isEmpty()){
+            Collections.sort(pedidosNoAsignados);
             Pedido pedidoElegido = seleccionaPedidoParaAsignar(pedidosNoAsignados);
             if (pedidoElegido == null) System.out.println("El pedido elegido no existe");
             else {
@@ -140,6 +143,7 @@ public class main {
     // Función que pinta los pedidos para que el admin los asigne
     private static void pintaPedidosParaAsignacion(ArrayList<Pedido> pedidosNoAsignados) {
         int contador = 1;
+
         for (Pedido p : pedidosNoAsignados) {
             System.out.println(contador + ".- Id: " + p.getId() + ". " + p.getEstado() + " - (" +
                     p.getFechaPedido() + ") -> (" + p.getFechaEntregaEstimada() + ").");
@@ -287,7 +291,14 @@ public class main {
             }
             if (idPedido != -1) {
                 Pedido temp = controlador.buscaPedidoById(idPedido);
-                if (modificaPedido(controlador,temp)) System.out.println("Se ha modificado correctamente el pedido");
+                if (modificaPedido(controlador,temp)){
+                    try {
+                        Comunicaciones.enviaCorreoCambioEstadoPedidoCliente(temp,controlador.buscaPropietarioPedido(temp.getId()));
+                    } catch (RuntimeException e) {
+                        System.out.println("No se ha encontrado el correo del cliente");
+                    }
+                    System.out.println("Se ha modificado correctamente el pedido");
+                }
                 else System.out.println("Ha ocurrido un error al modificar el pedido");
             }
         }
@@ -334,6 +345,7 @@ public class main {
     private static void pintaResumenPedidos(Controlador controlador) {
         if (controlador.numPedidosTotales() == 0) System.out.println("Aún no hay ningún pedido realizado");
         else {
+            Collections.sort(controlador.getTodosPedidos());
             System.out.println("Estos son todos los pedidos realizados: ");
             for (Pedido p : controlador.getTodosPedidos()) {
                 pintaResumenPedidoParaAdmin(p);
@@ -721,9 +733,17 @@ public class main {
             } catch (NumberFormatException e ) {
                 System.out.println("ERROR. El formato introducido es incorrecto.");
             }
-            if (numPedido != -1) {
+            if (numPedido > 0 && numPedido <= trabajadorTemp.getPedidosAsignados().size()) {
                 Pedido temp = trabajadorTemp.getPedidosAsignados().get(numPedido - 1);
-                if (modificaPedido(controlador,temp)) System.out.println("Se ha modificado correctamente el pedido");
+                if (modificaPedido(controlador,temp)){
+                    try {
+                        Comunicaciones.enviaCorreoCambioEstadoPedidoCliente(temp,controlador.buscaPropietarioPedido(temp.getId()));
+                    } catch (RuntimeException e) {
+                        System.out.println("No se ha encontrado el correo del cliente");
+                    }
+                    System.out.println("Se ha modificado correctamente el pedido");
+
+                }
                 else System.out.println("Ha ocurrido un error al modificar el pedido");
             }
         }
@@ -735,9 +755,9 @@ public class main {
         int op = -1;
         System.out.print("""
                 =============================================
-                1.- Modifica el estado del pedido
-                2.- Añadir un comentario al pedido
-                3.- Modificar la fecha de entrega estimada
+                 1.- Modifica el estado del pedido
+                 2.- Añadir un comentario al pedido
+                 3.- Modificar la fecha de entrega estimada
                 =============================================
                 
                 Introduce una opción:\s""");
@@ -780,6 +800,7 @@ public class main {
         }
     }
 
+    // Función que pinta todos los pedidos que tiene un trabajador asignado
     private static void pintaPedidosAsignadosTrabajador(Controlador controlador, Trabajador trabajadorTemp) {
         if (trabajadorTemp.getPedidosAsignados().isEmpty()) System.out.println("No tienes pedidos asignados");
         else {
@@ -795,6 +816,7 @@ public class main {
         }
     }
 
+    // Función quepinta todos los datos de un pedido y su cliente para un trabajador
     private static void pintaPedidoParaTrabajador(PedidoClienteDataClass p) {
         System.out.print("============== " + p.getIdPedido() + " ==============\n");
         System.out.println("Nombre: " + p.getNombreCliente());
@@ -812,6 +834,7 @@ public class main {
         }
     }
 
+    // Función que gestiona todas las funciones de los clientes
     private static void menuCliente(Controlador controlador, Cliente clienteTemp) {
         int op = -1;
         do {
@@ -851,6 +874,7 @@ public class main {
         } while (op != 6);
     }
 
+    // Función que gestiona el cambio de datos personales de un cliente
     private static void modificaDatosCliente(Cliente clienteTemp, Controlador controlador) {
         int op = -1;
         System.out.println("Estos son tus datos: ");
@@ -866,6 +890,7 @@ public class main {
         else System.out.println("Ha ocurrido un problema al cambiar sus datos");
     }
 
+    // Función por la cual el cliente introduce su nuevo dato para cambiar.
     private static boolean cambiaDatoCliente(Controlador controlador, Cliente clienteTemp, int op) {
         switch (op) {
             case 1: // Cambia nombre
@@ -917,6 +942,7 @@ public class main {
         }
     }
 
+    // Función que pinta los datos de un cliente a modo de menú de selección
     private static void pintaDatosClienteParaSeleccionar(Cliente clienteTemp) {
         System.out.println("=====================================");
         System.out.println();
@@ -930,6 +956,7 @@ public class main {
         System.out.println("=====================================");
     }
 
+    // Función que pinta los datos de un cliente
     private static void pintaDatosClienteParaCliente(Cliente clienteTemp) {
         System.out.println("=====================================");
         System.out.println();
@@ -944,10 +971,13 @@ public class main {
 
     }
 
+    // Función que pinta los pedidos de un cliente
     private static void pintaPedidosCliente(Controlador controlador, Cliente clienteTemp) {
         if (clienteTemp.getPedidos().isEmpty()) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
+            // Primero ordenamos los pedidos
             Collections.sort(clienteTemp.getPedidos());
+            // Pintamos los pedidos que aún están pendientes de entrega
             System.out.println("Pedidos pendientes de entrega: ");
             System.out.println("============================");
             for (Pedido p : clienteTemp.getPedidosPendientesEntrega()) {
@@ -957,6 +987,7 @@ public class main {
 
             }
 
+            // Pintamos los pedidos cancelados si hay
             if (!clienteTemp.getPedidosCancelados().isEmpty()) {
                 Utils.pulsaParaContinuar();
                 System.out.println("Pedidos cancelados: ");
@@ -968,6 +999,8 @@ public class main {
 
                 }
             }
+
+            // Pintamos los pedidos entregados si hay
             if (!clienteTemp.getPedidosEntregados().isEmpty()) {
                 Utils.pulsaParaContinuar();
                 System.out.println("Pedidos entregados: ");
@@ -984,6 +1017,7 @@ public class main {
 
     }
 
+    // Función que pinta los datos del pedido de un cliente
     private static void pintaPedidoParaCliente(Pedido p, Cliente clienteTemp) {
         System.out.println("============ Id: " + p.getId() + " ============");
         System.out.println();
@@ -999,15 +1033,17 @@ public class main {
             pintaProductoParaPedido(producto);
         }
         System.out.println();
-        System.out.println("Total del pedido: " + p.precioPedidoConIVA(16) + " euros.");
+        System.out.println("Total del pedido: " + p.precioPedidoConIVA(21) + " euros.");
 
     }
 
+    // Función que pinta los datos de un producto a modo de resumen.
     private static void pintaProductoParaPedido(Producto producto) {
         System.out.println("- " + producto.getMarca() + " || " +
                 producto.getModelo() + " || " + producto.getPrecio() + " || ");
     }
 
+    // Función que gestiona todas las funciones que un cliente puede realizar en cuanto a sus pedidos
     private static void subMenuPedidoCliente(Controlador controlador, Cliente cliente) {
         int op = -1;
         do {
@@ -1026,7 +1062,6 @@ public class main {
                     Utils.pulsaParaContinuar();
                     break;
                 case 3: // Eliminamos un producto del carro
-                    // TODO cambiar la manera de seleccionar el producto y pintar antes el carrito
                     eliminaProductoCarrito(controlador,cliente);
                     break;
                 case 4: // Confirmamos el pedido
@@ -1047,6 +1082,7 @@ public class main {
         } while (op != 6);
     }
 
+    // Función que cancela el pedido de un cliente
     private static void cancelaPedidoCliente(Controlador controlador, Cliente cliente) {
         if (cliente.getPedidos().isEmpty()) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
@@ -1058,6 +1094,7 @@ public class main {
             } catch (NumberFormatException e) {
                 System.out.println("ERROR. El formato introducido es incorrecto");
             }
+            // Comprobamos que el pedido elegido existe
             if (numPedido > 0 && numPedido <= cliente.getPedidosPendientesEntrega().size()) {
             if (cliente.cancelaPedido(cliente.getPedidosPendientesEntrega().get(numPedido - 1).getId()))
                 System.out.println("Pedido cancelado correctamente");
@@ -1067,6 +1104,7 @@ public class main {
         Utils.pulsaParaContinuar();
     }
 
+    //Función que pinta los pedidos a modo de menú de selección para el cliente
     private static void pintaPedidosParaSeleccionCliente(Cliente cliente) {
         Collections.sort(cliente.getPedidos());
         int contador = 1;
@@ -1079,6 +1117,7 @@ public class main {
         }
     }
 
+    // Función que pinta los atributos de un pedido para un cliente
     private static void pintaPedidoParaSeleccionCliente(Pedido p) {
         System.out.print("Id: " + p.getId() + ". " + Utils.getEstadoPedido(p.getEstado()) + "\n");
         for (Producto producto : p.getProductos()) {
@@ -1086,6 +1125,7 @@ public class main {
         }
     }
 
+    // Función que permite a un cliente convertir su carrito en un pedido
     private static void confirmaPedidoCliente(Controlador controlador, Cliente cliente) {
         if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
@@ -1104,6 +1144,7 @@ public class main {
         Utils.pulsaParaContinuar();
     }
 
+    // Función que elimina un producto del carrito de un cliente
     private static void eliminaProductoCarrito(Controlador controlador,Cliente cliente) {
         if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
@@ -1117,6 +1158,7 @@ public class main {
                 } catch (NumberFormatException e) {
                     System.out.println("ERROR. El formato introducido es incorrecto");
                 }
+                // Comprobamos que el producto seleccionado existe
                 if (numProducto < 1 || numProducto >= cliente.getCarro().size())
                     System.out.println("El producto que ha seleccionado no existe");
                 else {
@@ -1130,6 +1172,7 @@ public class main {
         Utils.pulsaParaContinuar();
     }
 
+    // Función que pinta todos los productos que tiene un cliente en su carrito
     private static void pintaCarritoCliente(Cliente cliente) {
         if (cliente.numProductosCarro() == 0) System.out.println("Aún no tiene ningún producto en su carrito");
         else {
@@ -1142,16 +1185,18 @@ public class main {
             }
             System.out.println();
             System.out.println("Total sin IVA:\t\t " + cliente.precioCarroSinIVA());
-            System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro(16));
-            System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA(16));
+            System.out.println("IVA del Pedido:\t\t " + cliente.precioIVACarro(21));
+            System.out.println("Total del Pedido:\t " + cliente.precioCarroConIVA(21));
         }
 
     }
 
+    // Función que pinta los atributos de un producto para el carrito de un cliente
     private static void pintaProductoCarritoCliente(Producto p, int contador) {
         System.out.println(contador + "- " + p.getMarca() + " : " + p.getModelo() + " : " + p.getPrecio());
     }
 
+    // Función que permite al cliente meter un producto en su carrito
     private static void insertaProductoEnCarrito(Controlador controlador, Cliente cliente) {
         do {
             Utils.limpiaPantalla();
@@ -1168,7 +1213,8 @@ public class main {
                 } catch (NumberFormatException e) {
                     System.out.println("ERROR. El formato introducido es incorrecto");
                 }
-                if (numProducto < 0 || numProducto >= resultados.size())
+                // Comprobamos si el producto elegido existe
+                if (numProducto <= 0 || numProducto > resultados.size())
                     System.out.println("El producto que ha seleccionado no existe");
                 else {
                     if (controlador.addProductoCarrito(cliente, resultados.get(numProducto - 1).getId()))
@@ -1182,6 +1228,7 @@ public class main {
         Utils.pulsaParaContinuar();
     }
 
+    // Función que pinta el catálogo a modo de menú de selección para  el cliente
     private static void pintaCatalogoParaSeleccion(ArrayList<Producto> resultados) {
         int contador = 1;
         for (Producto p : resultados) {
@@ -1191,10 +1238,12 @@ public class main {
         System.out.println();
     }
 
+    // Función que pinta los atributos de un producto paraun menú de selección
     private static void pintaProductoParaSeleccion(int contador, Producto p) {
         System.out.println(contador + ".- " + p.getMarca() + " - " + p.getModelo() + " - " + p.getPrecio());
     }
 
+    // Función que gestiona todas las maneras en las que un cliente puede ver el catálogo de productos
     private static void menuVisionadoCatalogo(Controlador controlador) {
         int op = -1;
         do {
@@ -1265,6 +1314,7 @@ public class main {
         } while (op != 7);
     }
 
+    // Función que pinta todos los productos que haya almacenados en una lista pasada por los parámetros
     private static void pintaProductos(ArrayList<Producto> resultados) {
         String op = "";
         for (int i = 0; i < resultados.size(); i++) {
@@ -1282,6 +1332,7 @@ public class main {
     }
 
 
+    // Función que gestiona el menú inicial que sale al iniciar el programa
     private static Object menuInicio(Controlador controlador) {
         int op = 0;
         System.out.print("""
@@ -1298,13 +1349,13 @@ public class main {
             System.out.println("ERROR. Formato introducido incorrecto");
         }
         switch (op) {
-            case 1:
+            case 1: // Pinta catálogo sin estar registrado
                 pintaCatalogo(controlador);
                 break;
-            case 2:
+            case 2: // Registramos a un cliente
                 registroCliente(controlador);
                 break;
-            case 3:
+            case 3: // Inicio de sesión
                 return inicioSesion(controlador);
             default:
                 System.out.println("Opción introducida incorrecta");
@@ -1314,6 +1365,7 @@ public class main {
         return null;
     }
 
+    // Función que gestiona toda la petición de datos para registrar a un cliente
     private static void registroCliente(Controlador controlador) {
         int telefono = 0;
         String email = "";
@@ -1351,12 +1403,34 @@ public class main {
         if (controlador.registraCliente(email, clave, nombre, localidad, provincia, direccion, telefono)) {
             System.out.println("Se ha registrado correctamente");
             System.out.println("Aún tiene que verificar su correo");
-            if (Utils.preguntaSiNo().equalsIgnoreCase("s")) Comunicaciones.verificacionDeCorreo(email);
+            if (Utils.preguntaSiNo().equalsIgnoreCase("s"))
+                if (verificacionDeCorreoCliente(email))
+                    controlador.buscaClienteByCorreo(email).setActivado(true);
         }
         else System.out.println("Ha ocurrido un problema a la hora de registrarse");
         Utils.limpiaPantalla();
     }
 
+    // Función que verifica el correo de un cliente que aún no está activado
+    private static boolean verificacionDeCorreoCliente(String email) {
+        int numToken = (int) (Math.random() * 1000000);
+        String token = "FS-" + numToken;
+        String tokenIntroducido = "";
+        try {
+            Comunicaciones.enviarCorreoVerificacion(email,token);
+        } catch (RuntimeException e) {
+            System.out.println("No hemos podido encontrar su correo");
+            return false;
+        }
+        do {
+            System.out.print("Inserte el token que hemos enviado a su correo: ");
+            tokenIntroducido = S.nextLine();
+        } while (!token.equals(tokenIntroducido));
+        System.out.println("Su correo ha sido verificado correctamente");
+        return true;
+    }
+
+    // Función que gestiona el inicio de sesión pidiendo el email y la contraseña
     private static Object inicioSesion(Controlador controlador) {
         System.out.print("Introduzca su email: ");
         String email = S.nextLine();
@@ -1368,6 +1442,7 @@ public class main {
         return user;
     }
 
+    // Función que pinta todos los productos del catálogo de 5 en 5
     private static void pintaCatalogo(Controlador controlador) {
         String op = "";
         ArrayList<Producto> productosParaPintar = new ArrayList<>();
@@ -1391,6 +1466,7 @@ public class main {
         Utils.limpiaPantalla();
     }
 
+    // Función que pinta los datos de un producto cuando el usuario no ha iniciado sesión
     private static void pintaProductoSinRegistro(Producto producto) {
 
         System.out.println("===================================");

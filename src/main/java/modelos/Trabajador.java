@@ -11,6 +11,7 @@ public class Trabajador {
     private int movil;
     private ArrayList<Pedido> pedidosAsignados;
     private boolean alta;
+    private String idTelegram;
 
     // Constructor
 
@@ -22,6 +23,7 @@ public class Trabajador {
         this.movil = movil;
         pedidosAsignados = new ArrayList<>();
         alta = true;
+        idTelegram = "6622508571";
     }
 
     // Constructor copia
@@ -34,6 +36,7 @@ public class Trabajador {
         movil = trabajador.movil;
         pedidosAsignados = new ArrayList<>(trabajador.pedidosAsignados);
         alta = trabajador.alta;
+        idTelegram = trabajador.idTelegram;
     }
 
     // Getters y Setters
@@ -92,6 +95,14 @@ public class Trabajador {
 
     public void setAlta(boolean alta) {
         this.alta = alta;
+    }
+
+    public String getIdTelegram() {
+        return idTelegram;
+    }
+
+    public void setIdTelegram(String idTelegram) {
+        this.idTelegram = idTelegram;
     }
 
     // Otros metodos

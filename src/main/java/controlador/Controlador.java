@@ -2,6 +2,7 @@ package controlador;
 
 import data.DataProductos;
 import modelos.*;
+import utils.Comunicaciones;
 
 import java.util.ArrayList;
 
@@ -23,9 +24,10 @@ public class Controlador {
     }
 
     private void mock() {
-        registraCliente("a@","1234","amai","el villar",
-                "jaen","calle calle",123456789);
-        nuevoTrabajador("b@","0000","nose",98756321);
+        registraCliente("miguelangelcamaracasado@gmail.com","1234","Miguel Ángel","Torredonjimeno",
+                "Jaen","Calle La Cerca",668569596);
+        clientes.getFirst().setActivado(true);
+        nuevoTrabajador("wawowo23@gmail.com","0000","wiwi",98756321);
         admins.add(new Admin(generaIdAdmin(),"noseTio","4321","c@"));
     }
 
@@ -110,6 +112,7 @@ public class Controlador {
                 // Buscamos si hay algún trabajador para asignarle el pedido de manera automática
                 Trabajador temp  = buscaTrabajadorCandidatoParaAsignar();
                 if (temp != null) asignaPedido(pedidoAgregado.getId(),temp.getId());
+                Comunicaciones.enviaCorreoClientePedidoConfirmado(pedidoAgregado,c);
                 return true;
             }
         }
@@ -325,6 +328,7 @@ public class Controlador {
     public boolean cambiaEstadoPedido(int idPedido, int nuevoEstado) {
         Pedido temp = buscaPedidoById(idPedido);
         if (temp == null) return false;
+
         return temp.cambiaEstado(nuevoEstado);
 
     }
@@ -373,6 +377,12 @@ public class Controlador {
         Trabajador trabajador = buscaTrabajadorById(idTrabajador);
         Pedido pedido = buscaPedidoById(idPedido);
         if (trabajador == null || pedido == null) return false;
+        Comunicaciones.enviaMensajeTelegram(pedido,trabajador.getIdTelegram());
+        Cliente temp = buscaPropietarioPedido(idPedido);
+        Comunicaciones.enviaCorreoPedidoAsignado(new PedidoClienteDataClass(pedido.getId(),temp.getId(),temp.getNombre(),
+                temp.getProvincia(),temp.getLocalidad(),temp.getDireccion(),temp.getTelefono(),pedido.getFechaPedido(),
+                pedido.getFechaEntregaEstimada(), pedido.getEstado(), pedido.getComentario(),
+                pedido.getProductos()),trabajador);
         return trabajador.asignaPedido(pedido);
     }
 
@@ -394,7 +404,7 @@ public class Controlador {
     }
 
     // Metodo que busca al cliente propietario de un pedido
-    private Cliente buscaPropietarioPedido(int idPedido) {
+    public Cliente buscaPropietarioPedido(int idPedido) {
         for (Cliente c : clientes) {
             for (Pedido p : c.getPedidos())
                 if (p.getId() == idPedido) return c;

@@ -23,7 +23,7 @@ public class Pedido implements Comparable<Pedido>{
         fechaEntregaEstimada = fechaPedido.plusDays(5);
         deliveryDate = null;
         estado = 0;
-        comentario = "";
+        comentario = "Está siendo procesado";
         productos = new ArrayList<>();
     }
 
@@ -170,7 +170,7 @@ public class Pedido implements Comparable<Pedido>{
 
     @Override
     public int compareTo(Pedido pedido) {
-        return this.fechaPedido.compareTo(pedido.getFechaPedido());
+        return pedido.getFechaPedido().compareTo(this.fechaPedido);
     }
 
 }
