@@ -1369,6 +1369,8 @@ public class main {
                 }
                 if (eleccion.equalsIgnoreCase("n"))
                     System.out.println("Los datos de prueba no serán utilizados");
+                Utils.pulsaParaContinuar();
+                Utils.limpiaPantalla();
                 break;
             default:
                 System.out.println("Opción introducida incorrecta");

@@ -192,11 +192,14 @@ public class Comunicaciones {
 
 
     public static boolean enviaMensajeTelegram(Pedido pedido, String idTrabajador) {
-        String mensaje = "Se le ha sido asignado el pedido " + pedido.getId() + "\n";
-        mensaje += "Detalles del pedido :\n";
-        mensaje += "- " + Utils.getEstadoPedido(pedido.getEstado()) + "\n";
-        mensaje += "- " + pedido.getFechaPedido() + "\n";
-        mensaje += "- " + pedido.getFechaEntregaEstimada() + "\n";
+        String mensaje = String.format("""
+                Se le ha sido asignado el pedido " + pedido.getId()
+                Detalles del pedido :
+                Estado: %s
+                Fecha de realización: %s
+                Fecha de entrega estimada: %s""", pedido.getId(),Utils.getEstadoPedido(pedido.getEstado()),
+                String.valueOf(pedido.getFechaPedido()),String.valueOf(pedido.getFechaEntregaEstimada()));
+
         String direccion;
         String fijo = "https://api.telegram.org/bot7710645977:AAHX19-id6XW7u51pi3ke5d_drylga_KMZw/sendMessage?chat_id=" + idTrabajador + "&text=";
         direccion = fijo + mensaje;
