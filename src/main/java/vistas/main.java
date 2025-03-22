@@ -1343,6 +1343,7 @@ public class main {
                 1.- Ver Catálogo
                 2.- Registro
                 3.- Inicio de Sesión
+                4.- Utilizar los datos de prueba
                 
                 Marque su opción:\s""");
         try {
@@ -1359,6 +1360,16 @@ public class main {
                 break;
             case 3: // Inicio de sesión
                 return inicioSesion(controlador);
+            case 4:
+                System.out.print("¿Está seguro que quiere usar los datos de prueba?(S/N):");
+                String eleccion = S.nextLine();
+                if (eleccion.equalsIgnoreCase("s")) {
+                    controlador.mock();
+                    System.out.println("Los datos de prueba han sido utilizados");
+                }
+                if (eleccion.equalsIgnoreCase("n"))
+                    System.out.println("Los datos de prueba no serán utilizados");
+                break;
             default:
                 System.out.println("Opción introducida incorrecta");
                 break;

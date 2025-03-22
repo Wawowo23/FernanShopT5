@@ -20,15 +20,15 @@ public class Controlador {
         trabajadores = new ArrayList<>();
         admins = new ArrayList<>();
         catalogo = DataProductos.getProductosMock();
-        mock();
+
     }
 
-    private void mock() {
+    public void mock() {
         registraCliente("miguelangelcamaracasado@gmail.com","1234","Miguel Ángel","Torredonjimeno",
                 "Jaen","Calle La Cerca",668569596);
         clientes.getFirst().setActivado(true);
         nuevoTrabajador("wawowo23@gmail.com","0000","wiwi",98756321);
-        admins.add(new Admin(generaIdAdmin(),"noseTio","4321","c@"));
+        admins.add(new Admin(generaIdAdmin(),"admin","4321","c@"));
     }
 
     // Getters y Setters

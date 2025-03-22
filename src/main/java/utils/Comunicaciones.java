@@ -621,7 +621,7 @@ public class Comunicaciones {
             // Intentamos mandar el mensaje
             send(message);
         } catch (Exception e) {
-            System.out.println();;
+            System.out.println();
         }
         return true;
     }
